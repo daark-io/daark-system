@@ -1,204 +1,150 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DAARK — Animation Flow</title>
-    <style>
-        :root {
-            --black: #000000;
-            --text: #ffffff;
-            --muted: #8a8a8a;
-            --red: #ff2b1a;
-            --orange-glow: #ff4d00;
-            --cream: #ede4d0;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DAARK</title>
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: black;
+    }
 
-        body {
-            background: var(--black);
-            color: var(--text);
-            font-family: 'Arial', sans-serif;
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            perspective: 1000px;
-        }
+    #canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+    }
 
-        /* Hyperspace Stars Background */
-        .stars-container {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at center, #111 0%, #000 100%);
-            overflow: hidden;
-            z-index: -1;
-        }
+    .center-ui {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      text-align: center;
+      font-family: sans-serif;
+    }
 
-        .star {
-            position: absolute;
-            background: white;
-            border-radius: 50%;
-            opacity: 0.3;
-        }
+    .door {
+      width: 80px;
+      height: 160px;
+      margin: 20px auto;
+      background: #FF3B1F;
+      box-shadow: 0 0 40px rgba(255, 59, 31, 0.6);
+      transition: all 1.2s ease;
+    }
 
-        .hyperspace .star {
-            animation: warp 0.8s infinite linear;
-        }
+    .door.success {
+      background: #FFF3D6;
+      box-shadow: 0 0 80px rgba(255, 243, 214, 0.8);
+    }
 
-        @keyframes warp {
-            0% { transform: translateZ(0) scale(1); opacity: 0.3; }
-            100% { transform: translateZ(500px) scale(2); opacity: 0; }
-        }
-
-        /* Main Content Container */
-        .container {
-            text-align: center;
-            max-width: 400px;
-            z-index: 10;
-            transition: opacity 0.5s ease;
-        }
-
-        .logo { font-size: 48px; font-weight: 900; letter-spacing: 15px; margin-bottom: 5px; }
-        .logo span { color: var(--red); }
-        .sub-tag { font-size: 10px; letter-spacing: 4px; color: var(--red); margin-bottom: 30px; display: block; }
-        
-        .headline { font-size: 24px; margin-bottom: 15px; font-weight: 400; }
-        .description { font-size: 14px; color: var(--muted); line-height: 1.6; margin-bottom: 30px; }
-
-        /* Form Elements */
-        .form-group { display: flex; flex-direction: column; gap: 12px; margin-bottom: 40px; }
-        input {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            padding: 15px;
-            color: white;
-            outline: none;
-            transition: border 0.3s;
-        }
-        input:focus { border-color: var(--orange-glow); }
-
-        .btn {
-            background: var(--red);
-            color: white;
-            border: none;
-            padding: 15px;
-            font-weight: bold;
-            letter-spacing: 2px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .btn:hover { background: #d41f12; }
-
-        /* The Door Component */
-        .door-frame {
-            width: 120px;
-            height: 180px;
-            border: 2px solid var(--cream);
-            margin: 0 auto;
-            position: relative;
-            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 0 0px var(--orange-glow);
-        }
-
-        /* States from image_0009f0.jpg */
-        .state-transition .door-frame {
-            border-color: var(--orange-glow);
-            box-shadow: 0 0 20px var(--orange-glow);
-            background: rgba(255, 77, 0, 0.1);
-        }
-
-        .state-loading .door-frame {
-            box-shadow: 0 0 50px var(--orange-glow);
-            background: var(--orange-glow);
-        }
-
-        .state-success .door-frame {
-            background: var(--cream);
-            box-shadow: 0 0 80px var(--cream);
-            border-color: var(--cream);
-            transform: scale(1.1);
-        }
-
-        .hidden { display: none; }
-        .success-msg { font-size: 32px; font-weight: 800; margin-top: 20px; }
-
-    </style>
+    button {
+      padding: 10px 20px;
+      background: #FF3B1F;
+      border: none;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
 </head>
-<body id="body">
+<body>
 
-    <div class="stars-container" id="stars"></div>
+<canvas id="canvas"></canvas>
 
-    <div class="container" id="main-ui">
-        <div class="logo">DAA<span>R</span>K</div>
-        <small class="sub-tag">YOU VS YOU</small>
-        
-        <div id="form-content">
-            <p class="sub-tag">COMING SOON</p>
-            <h1 class="headline">The journey begins within.</h1>
-            <p class="description">Most people fail. Not because they lack effort. Because they lack structure.</p>
-            
-            <div class="form-group">
-                <input type="email" placeholder="Enter your email" id="email">
-                <input type="tel" placeholder="Enter your phone number">
-                <button class="btn" onclick="startSequence()">JOIN WAITLIST</button>
-            </div>
-        </div>
+<div class="center-ui">
+  <h1>DAARK</h1>
+  <div class="door" id="door"></div>
+  <button id="btn">ENTER</button>
+</div>
 
-        <div id="success-content" class="hidden">
-            <h1 class="success-msg">YOU'RE IN.</h1>
-            <p class="description">The journey begins within.</p>
-            <button class="btn" style="background: transparent; border: 1px solid white;" onclick="location.reload()">BACK TO HOME</button>
-        </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 
-        <!-- The Door -->
-        <div class="door-frame" id="door"></div>
-    </div>
+<script>
+const canvas = document.getElementById('canvas')
 
-    <script>
-        // Create random stars
-        const starsContainer = document.getElementById('stars');
-        for (let i = 0; i < 100; i++) {
-            const star = document.createElement('div');
-            star.className = 'star';
-            star.style.width = Math.random() * 3 + 'px';
-            star.style.height = star.style.width;
-            star.style.left = Math.random() * 100 + '%';
-            star.style.top = Math.random() * 100 + '%';
-            starsContainer.appendChild(star);
-        }
+const scene = new THREE.Scene()
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000)
+const renderer = new THREE.WebGLRenderer({ canvas, alpha: true })
 
-        function startSequence() {
-            const body = document.getElementById('body');
-            const door = document.getElementById('door');
-            const form = document.getElementById('form-content');
-            const success = document.getElementById('success-content');
+renderer.setSize(window.innerWidth, window.innerHeight)
 
-            // 1. Transition Start (Door turns orange)
-            body.classList.add('state-transition');
-            
-            // 2. Hyperspace Pullback
-            setTimeout(() => {
-                body.classList.add('hyperspace');
-            }, 500);
+camera.position.z = 5
 
-            // 3. Button Clicked (Glow intensifies)
-            setTimeout(() => {
-                body.classList.remove('state-transition');
-                body.classList.add('state-loading');
-            }, 1500);
+// STARFIELD
+const count = 900
+const positions = new Float32Array(count * 3)
 
-            // 4. Success (Door transforms to light cream)
-            setTimeout(() => {
-                body.classList.remove('state-loading', 'hyperspace');
-                body.classList.add('state-success');
-                form.classList.add('hidden');
-                success.classList.remove('hidden');
-            }, 3000);
-        }
-    </script>
+for (let i = 0; i < count; i++) {
+  let x = (Math.random() - 0.5) * 50
+  let y = (Math.random() - 0.5) * 50
+
+  // center clean
+  if (Math.sqrt(x*x + y*y) < 5) {
+    x += 10
+    y += 10
+  }
+
+  positions[i * 3] = x
+  positions[i * 3 + 1] = y
+  positions[i * 3 + 2] = -Math.random() * 50
+}
+
+const geometry = new THREE.BufferGeometry()
+geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+
+const material = new THREE.PointsMaterial({
+  color: 0xffffff,
+  size: 0.05,
+  opacity: 0.7,
+  transparent: true
+})
+
+const stars = new THREE.Points(geometry, material)
+scene.add(stars)
+
+let speed = 0.02
+
+function animate() {
+  requestAnimationFrame(animate)
+
+  const pos = geometry.attributes.position.array
+
+  for (let i = 0; i < pos.length; i += 3) {
+    pos[i + 2] += speed
+
+    if (pos[i + 2] > 1) {
+      pos[i + 2] = -50
+    }
+  }
+
+  geometry.attributes.position.needsUpdate = true
+  renderer.render(scene, camera)
+}
+
+animate()
+
+// INTERACTION
+const btn = document.getElementById("btn")
+const door = document.getElementById("door")
+
+btn.addEventListener("click", () => {
+
+  gsap.to({ val: speed }, {
+    val: 0.6,
+    duration: 1,
+    onUpdate: function() {
+      speed = this.targets()[0].val
+    }
+  })
+
+  door.classList.add("success")
+})
+</script>
+
 </body>
 </html>
