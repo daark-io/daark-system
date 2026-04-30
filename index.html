@@ -1,154 +1,192 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DAARK</title>
-
-<style>
-body {
-  margin: 0;
-  background: black;
-  color: white;
-  font-family: Arial, sans-serif;
-  overflow: hidden;
-}
-
-/* STARFIELD /
-.starfield {
-  position: fixed;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(white 1px, transparent 1px);
-  background-size: 3px 3px;
-  opacity: 0.15;
-  animation: drift 40s linear infinite;
-}
-
-.starfield.fast {
-  animation-duration: 2s;
-  opacity: 0.4;
-}
-
-@keyframes drift {
-  from { transform: translateY(0); }
-  to { transform: translateY(-1000px); }
-}
-
-/ CENTER CONTENT /
-.container {
-  position: relative;
-  z-index: 2;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
-/ TEXT /
-h1 {
-  font-size: 40px;
-  margin: 10px 0;
-}
-
-.red {
-  color: #ff5a00;
-}
-
-/ INPUT /
-input {
-  margin: 5px;
-  padding: 12px;
-  width: 250px;
-  background: #111;
-  border: 1px solid #333;
-  color: white;
-  outline: none;
-}
-
-/ BUTTON /
-button {
-  margin-top: 10px;
-  padding: 12px 30px;
-  background: #ff5a00;
-  border: none;
-  color: white;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-button:hover {
-  box-shadow: 0 0 20px rgba(255,90,0,0.6);
-}
-
-/ DOOR /
-.door {
-  margin-top: 30px;
-  width: 140px;
-  height: 260px;
-  background: #0a0a0a;
-  border: 1px solid rgba(255,90,0,0.3);
-  box-shadow: 0 0 10px rgba(255,90,0,0.1);
-  transition: all 0.6s ease;
-}
-
-/ ACTIVE (CLICK) /
-.door.active {
-  background: radial-gradient(#ff5a00, #ff2e00);
-  box-shadow: 0 0 80px rgba(255,80,0,1);
-}
-
-/ SUCCESS */
-.door.success {
-  background: radial-gradient(#ffffff, #f5e6c8);
-  box-shadow: 0 0 120px rgba(255,255,255,1);
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DAARK • YOU VS YOU</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    .star-bg {
+      background: radial-gradient(circle, rgba(255,255,255,0.9) 0.8px, transparent 1px),
+                  radial-gradient(circle, rgba(255,255,255,0.6) 0.6px, transparent 1px);
+      background-size: 70px 70px, 110px 110px;
+      animation: starDrift 90s linear infinite;
+    }
+    @keyframes starDrift {
+      from { background-position: 0 0, 30px 30px; }
+      to { background-position: 200px 200px, 230px 230px; }
+    }
+    .door {
+      transition: all 1.4s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+    .shooting-star {
+      position: absolute;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #fff, transparent);
+      box-shadow: 0 0 12px #fff;
+      animation: shoot linear infinite;
+    }
+    @keyframes shoot {
+      0% { transform: translateX(-150%) translateY(0); opacity: 0; }
+      20% { opacity: 1; }
+      80% { opacity: 1; }
+      100% { transform: translateX(300%) translateY(40px); opacity: 0; }
+    }
+  </style>
 </head>
+<body class="bg-black text-white min-h-screen overflow-hidden relative">
 
-<body>
+  <!-- Dense Star Background -->
+  <div class="star-bg absolute inset-0 opacity-40"></div>
 
-<div id="stars" class="starfield"></div>
+  <!-- Shooting Stars -->
+  <div id="shootingContainer" class="absolute inset-0 pointer-events-none"></div>
 
-<div class="container">
+  <div class="relative z-10 min-h-screen flex flex-col items-center justify-center p-6">
+    
+    <!-- Top Bar -->
+    <div class="absolute top-6 right-6 flex gap-3">
+      <button onclick="window.location.reload()" 
+              class="w-11 h-11 rounded-full bg-zinc-900/80 backdrop-blur flex items-center justify-center text-2xl hover:bg-zinc-800 transition">
+        ✕
+      </button>
+      <button class="w-11 h-11 rounded-full bg-zinc-900/80 backdrop-blur flex items-center justify-center text-2xl hover:bg-zinc-800 transition">
+        ↓
+      </button>
+    </div>
 
-<h1><span class="red">YOU</span> VS <span class="red">YOU</span></h1>
+    <div class="max-w-md w-full text-center">
+      <!-- Logo -->
+      <h1 class="text-[4.8rem] font-black tracking-[-3px] mb-1 leading-none">
+        DA<span class="text-orange-500">A</span>RK
+      </h1>
+      <p class="text-2xl tracking-[6px] text-zinc-400 mb-10">YOU VS YOU</p>
 
-<p>
-Most people fail.<br>
-Not because they lack effort.<br>
-Because they lack structure.
-</p>
+      <!-- Tagline -->
+      <div class="mb-10">
+        <p class="text-3xl font-light leading-tight">The journey begins within.</p>
+        <p class="text-zinc-400 mt-4 text-lg">
+          Most people fail.<br>
+          Not because they lack effort.<br>
+          Because they lack structure.
+        </p>
+      </div>
 
-<input placeholder="Email">
-<input placeholder="Phone">
+      <!-- Door -->
+      <div class="flex justify-center mb-12">
+        <div class="relative w-60 h-96">
+          <div id="door" 
+               class="door absolute inset-0 bg-gradient-to-b from-orange-600 via-red-700 to-black rounded-3xl border-2 border-zinc-700 shadow-2xl overflow-hidden">
+            <!-- Inner door highlight -->
+            <div class="absolute inset-x-10 top-16 h-3 bg-white/30 rounded-full blur-sm"></div>
+          </div>
+        </div>
+      </div>
 
-<button onclick="handleSubmit()">JOIN WAITLIST</button>
+      <!-- Form Section -->
+      <div id="formArea">
+        <form onsubmit="handleSubmit(event)" class="max-w-xs mx-auto space-y-4">
+          <div class="relative">
+            <i class="fa-solid fa-envelope absolute left-5 top-4.5 text-zinc-400"></i>
+            <input type="email" id="emailInput" value="you@example.com"
+                   class="w-full bg-zinc-900 border border-zinc-700 focus:border-orange-500 rounded-2xl px-12 py-4 text-white placeholder-zinc-500 outline-none">
+          </div>
+          <div class="relative">
+            <i class="fa-solid fa-phone absolute left-5 top-4.5 text-zinc-400"></i>
+            <input type="tel" id="phoneInput" value="+91 98765 43210"
+                   class="w-full bg-zinc-900 border border-zinc-700 focus:border-orange-500 rounded-2xl px-12 py-4 text-white placeholder-zinc-500 outline-none">
+          </div>
 
-<div id="door" class="door"></div>
+          <button id="submitBtn"
+                  type="submit"
+                  class="w-full bg-orange-600 hover:bg-orange-500 active:scale-95 transition-all py-4 rounded-2xl font-semibold text-lg flex items-center justify-center gap-2">
+            JOIN WAITLIST
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </form>
+      </div>
 
-<h2 id="successText" style="display:none;">YOU’RE IN</h2>
+      <!-- Success Section -->
+      <div id="successArea" class="hidden">
+        <div class="text-7xl mb-6">🌟</div>
+        <h2 class="text-6xl font-bold tracking-tight mb-3">YOU'RE IN.</h2>
+        <p class="text-2xl text-zinc-300">The journey begins within.</p>
+        
+        <button onclick="resetPage()" 
+                class="mt-10 px-10 py-4 border border-zinc-600 hover:border-white rounded-3xl text-lg flex items-center gap-3 mx-auto transition">
+          <i class="fa-solid fa-house"></i>
+          BACK TO HOME
+        </button>
+      </div>
+    </div>
+  </div>
 
-</div>
+  <script>
+    // Create multiple shooting stars
+    function createShootingStars() {
+      const container = document.getElementById('shootingContainer');
+      for (let i = 0; i < 12; i++) {
+        const star = document.createElement('div');
+        star.className = 'shooting-star';
+        star.style.top = (Math.random() * 85 + 5) + '%';
+        star.style.width = (80 + Math.random() * 100) + 'px';
+        star.style.animationDuration = (2.5 + Math.random() * 3) + 's';
+        star.style.animationDelay = '-' + (Math.random() * 6) + 's';
+        star.style.opacity = Math.random() * 0.6 + 0.4;
+        container.appendChild(star);
+      }
+    }
 
-<script>
-function handleSubmit() {
-  const door = document.getElementById("door")
-  const stars = document.getElementById("stars")
-  const success = document.getElementById("successText")
+    function handleSubmit(e) {
+      e.preventDefault();
+      
+      const btn = document.getElementById('submitBtn');
+      btn.innerHTML = 'JOINING...';
+      btn.disabled = true;
 
-  // START ANIMATION
-  door.classList.add("active")
-  stars.classList.add("fast")
+      // Door starts glowing stronger (orange)
+      const door = document.getElementById('door');
+      door.style.boxShadow = '0 0 60px 25px #f59e0b';
+      door.style.transform = 'scale(1.05)';
 
-  setTimeout(() => {
-    door.classList.remove("active")
-    door.classList.add("success")
-    success.style.display = "block"
-  }, 1500)
-}
-</script>
+      // After delay → success
+      setTimeout(() => {
+        door.style.backgroundImage = 'linear-gradient(to bottom, #fefce8, #fcd34d, #f59e0b)';
+        door.style.boxShadow = '0 0 100px 50px #fcd34d';
+        door.style.transform = 'scale(1.12)';
 
+        document.getElementById('formArea').classList.add('hidden');
+        document.getElementById('successArea').classList.remove('hidden');
+      }, 1800);
+    }
+
+    function resetPage() {
+      document.getElementById('formArea').classList.remove('hidden');
+      document.getElementById('successArea').classList.add('hidden');
+      
+      const door = document.getElementById('door');
+      door.style.backgroundImage = '';
+      door.style.boxShadow = '';
+      door.style.transform = '';
+      
+      const btn = document.getElementById('submitBtn');
+      btn.innerHTML = `JOIN WAITLIST <i class="fa-solid fa-arrow-right"></i>`;
+      btn.disabled = false;
+    }
+
+    // Initialize everything
+    window.onload = () => {
+      createShootingStars();
+      
+      // Initial subtle door glow
+      setTimeout(() => {
+        document.getElementById('door').style.boxShadow = '0 0 40px 15px rgba(249, 115, 22, 0.5)';
+      }, 800);
+    };
+  </script>
 </body>
 </html>
