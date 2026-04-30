@@ -1,600 +1,238 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>DAARK</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,600&family=Barlow:wght@200;300;400&display=swap');
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DAARK — YOU VS YOU</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  //fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+    .heading-font {
+      font-family: 'Playfair Display', serif;
+    }
+    .hero-bg {
+      background-image: linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.9)), url('https://picsum.photos/id/1015/1920/1080');
+      background-size: cover;
+      background-position: center;
+    }
+    .glow {
+      box-shadow: 0 0 60px -20px rgba(253, 186, 116, 0.3);
+    }
 
-:root {
-  --black:#060606;--black2:#0c0c0c;--red:#C2000E;
-  --white:#ECEAE3;--white2:#a09d96;--blue:#1247FF;--blue2:#4169ff;--gold:#c8a96e;
-}
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
-html{scroll-behavior:smooth;font-size:16px;}
-body{background:var(--black);color:var(--white);font-family:'Barlow',sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased;cursor:crosshair;}
-button{cursor:pointer;font-family:inherit;}
-input,textarea{font-family:inherit;}
-
-body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:9998;opacity:0.45;}
-#dust{position:fixed;inset:0;pointer-events:none;z-index:1;}
-#cursor{position:fixed;width:6px;height:6px;background:var(--red);border-radius:50%;pointer-events:none;z-index:9997;transform:translate(-50%,-50%);mix-blend-mode:screen;}
-#cursor-ring{position:fixed;width:32px;height:32px;border:1px solid rgba(194,0,14,0.4);border-radius:50%;pointer-events:none;z-index:9996;transform:translate(-50%,-50%);transition:transform 0.15s ease;}
-
-.scanline{position:fixed;top:0;left:0;right:0;height:2px;background:linear-gradient(to right,transparent,rgba(194,0,14,0.15),transparent);animation:scanline 8s linear infinite;pointer-events:none;z-index:9995;}
-
-.pg{display:none;min-height:100vh;position:relative;z-index:2;}
-.pg.on{display:block;}
-.pg.fc{display:none;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:60px 24px;position:relative;z-index:2;}
-.pg.fc.on{display:flex;}
-
-@keyframes fadeUp{from{opacity:0;transform:translateY(32px);}to{opacity:1;transform:translateY(0);}}
-@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
-@keyframes lineGrow{from{transform:scaleX(0);}to{transform:scaleX(1);}}
-@keyframes lineGrowY{from{transform:scaleY(0);}to{transform:scaleY(1);}}
-@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.25;}}
-@keyframes marquee{from{transform:translateX(0);}to{transform:translateX(-50%);}}
-@keyframes scanline{from{transform:translateY(-100%);}to{transform:translateY(100vh);}}
-@keyframes glitch{0%,100%{clip-path:inset(0 0 100% 0);}10%{clip-path:inset(8% 0 82% 0);}20%{clip-path:inset(43% 0 43% 0);}30%{clip-path:inset(70% 0 18% 0);}40%{clip-path:inset(12% 0 76% 0);}50%{clip-path:inset(55% 0 30% 0);}60%{clip-path:inset(25% 0 60% 0);}70%{clip-path:inset(88% 0 5% 0);}80%{clip-path:inset(35% 0 50% 0);}90%{clip-path:inset(62% 0 25% 0);}}
-@keyframes ringPulse{0%,100%{box-shadow:0 0 0 0 rgba(18,71,255,0.4);}50%{box-shadow:0 0 0 20px rgba(18,71,255,0);}}
-@keyframes redPulse{0%,100%{box-shadow:0 0 0 0 rgba(194,0,14,0.5);}50%{box-shadow:0 0 0 20px rgba(194,0,14,0);}}
-@keyframes goldPulse{0%,100%{box-shadow:0 0 0 0 rgba(200,169,110,0.4);}50%{box-shadow:0 0 0 20px rgba(200,169,110,0);}}
-@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
-@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
-@keyframes countUp{from{opacity:0;transform:scale(0.8);}to{opacity:1;transform:scale(1);}}
-
-.rv{opacity:0;transform:translateY(30px);transition:opacity 0.8s cubic-bezier(0.16,1,0.3,1),transform 0.8s cubic-bezier(0.16,1,0.3,1);}
-.rv.on{opacity:1;transform:translateY(0);}
-.rv.d1{transition-delay:0.1s;}.rv.d2{transition-delay:0.2s;}.rv.d3{transition-delay:0.3s;}.rv.d4{transition-delay:0.4s;}.rv.d5{transition-delay:0.5s;}
-
-/* NAV */
-nav{position:fixed;top:0;left:0;right:0;z-index:200;padding:18px 24px;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(to bottom,rgba(6,6,6,0.98) 0%,transparent 100%);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
-.logo{font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:0.14em;color:var(--white);display:flex;align-items:center;gap:4px;}
-.logo-reg{font-family:'Barlow Condensed',sans-serif;font-size:8px;color:var(--red);vertical-align:super;letter-spacing:0;}
-.nav-right{display:flex;align-items:center;gap:8px;font-family:'Barlow Condensed',sans-serif;font-size:9px;letter-spacing:0.3em;text-transform:uppercase;color:var(--red);}
-.nav-dot{width:5px;height:5px;border-radius:50%;background:var(--red);animation:pulse 1.8s ease infinite;}
-
-/* HERO */
-.hero{min-height:100vh;padding:110px 24px 70px;display:flex;flex-direction:column;justify-content:flex-end;position:relative;overflow:hidden;}
-.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 15% 40%, rgba(194,0,14,0.08) 0%, transparent 55%),radial-gradient(ellipse at 85% 60%, rgba(194,0,14,0.04) 0%, transparent 50%);}
-.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);background-size:60px 60px;mask-image:linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.3) 40%, transparent 100%);}
-.hero-num{font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:0.4em;text-transform:uppercase;color:var(--red);margin-bottom:20px;animation:fadeUp 0.6s ease 0.1s both;}
-.hero-h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(68px,19vw,120px);line-height:0.86;letter-spacing:0.01em;color:var(--white);animation:fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.2s both;position:relative;}
-.hero-h1 .r{color:var(--red);}
-.glitch{position:relative;}
-.glitch::before,.glitch::after{content:attr(data-text);position:absolute;inset:0;font-family:'Bebas Neue',sans-serif;font-size:inherit;line-height:inherit;letter-spacing:inherit;}
-.glitch::before{color:var(--red);left:2px;animation:glitch 4s ease infinite;}
-.glitch::after{color:rgba(18,71,255,0.6);left:-2px;animation:glitch 4s ease 0.5s infinite;}
-.hero-line{width:40px;height:1px;background:var(--red);margin:28px 0;transform-origin:left;animation:lineGrow 0.8s cubic-bezier(0.16,1,0.3,1) 0.6s both;}
-.hero-body{font-family:'Barlow Condensed',sans-serif;font-size:clamp(17px,4.5vw,22px);font-weight:300;color:rgba(236,234,227,0.45);line-height:1.65;max-width:300px;animation:fadeUp 0.7s ease 0.8s both;}
-.hero-body strong{color:var(--white);font-weight:600;}
-.hero-cta{margin-top:44px;display:flex;flex-direction:column;gap:14px;align-items:flex-start;animation:fadeUp 0.7s ease 1s both;}
-.hero-price{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(236,234,227,0.2);}
-.hero-price b{color:var(--white2);}
-.scroll-ind{position:absolute;bottom:32px;right:24px;display:flex;flex-direction:column;align-items:center;gap:8px;animation:fadeIn 1s ease 1.5s both;}
-.scroll-ind span{font-family:'Barlow Condensed',sans-serif;font-size:9px;letter-spacing:0.35em;text-transform:uppercase;color:rgba(236,234,227,0.2);writing-mode:vertical-rl;}
-.scroll-line{width:1px;height:48px;background:linear-gradient(to bottom,var(--red),transparent);animation:lineGrowY 1s ease 1.5s both;transform-origin:top;}
-
-/* MARQUEE */
-.mq-wrap{overflow:hidden;padding:13px 0;border-top:1px solid rgba(194,0,14,0.12);border-bottom:1px solid rgba(194,0,14,0.12);background:rgba(6,6,6,0.95);}
-.mq-track{display:flex;white-space:nowrap;animation:marquee 20s linear infinite;}
-.mq-track span{font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:0.3em;color:rgba(194,0,14,0.45);padding:0 28px;}
-.mq-track .sep{color:rgba(236,234,227,0.08);padding:0 4px;font-size:8px;}
-
-/* YOU VS YOU */
-.product-sec{padding:80px 24px;background:var(--black);}
-.sec-tag{font-family:'Barlow Condensed',sans-serif;font-size:9px;letter-spacing:0.4em;text-transform:uppercase;color:var(--red);margin-bottom:36px;display:flex;align-items:center;gap:12px;}
-.sec-tag::after{content:'';flex:1;height:1px;background:rgba(194,0,14,0.15);}
-.prod-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(78px,20vw,130px);line-height:0.82;color:var(--white);}
-.prod-title .vs{display:block;font-size:0.45em;color:rgba(236,234,227,0.1);letter-spacing:0.1em;line-height:1.4;}
-.prod-desc{margin-top:28px;font-family:'Barlow',sans-serif;font-size:14px;font-weight:300;color:rgba(236,234,227,0.38);line-height:2;border-left:2px solid var(--red);padding-left:16px;max-width:300px;}
-.prod-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(236,234,227,0.05);border:1px solid rgba(236,234,227,0.05);margin-top:36px;}
-.prod-feat{background:var(--black);padding:18px 16px;}
-.pf-icon{font-size:15px;margin-bottom:6px;}
-.pf-name{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--white);margin-bottom:4px;}
-.pf-sub{font-family:'Barlow Condensed',sans-serif;font-size:10px;color:rgba(236,234,227,0.2);}
-
-/* FORM SECTION */
-.form-sec{padding:64px 24px 80px;background:var(--black2);border-top:1px solid rgba(194,0,14,0.12);}
-.form-sec-tag{font-family:'Barlow Condensed',sans-serif;font-size:9px;letter-spacing:0.4em;text-transform:uppercase;color:var(--red);margin-bottom:32px;display:flex;align-items:center;gap:12px;}
-.form-sec-tag::after{content:'';flex:1;height:1px;background:rgba(194,0,14,0.15);}
-.form-sec-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(48px,12vw,72px);line-height:0.88;color:var(--white);margin-bottom:12px;}
-.form-sec-sub{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:300;color:rgba(236,234,227,0.28);line-height:1.8;margin-bottom:32px;max-width:340px;}
-
-/* BUTTONS */
-.btn{display:inline-flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:0.22em;border:none;padding:17px 44px;position:relative;overflow:hidden;transition:transform 0.15s ease;-webkit-tap-highlight-color:transparent;}
-.btn:active{transform:scale(0.97);}
-.btn-text{position:relative;z-index:1;}
-.btn-red{background:var(--red);color:var(--black);}
-.btn-full{width:100%;}
-.btn-submit-main{width:100%;padding:20px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:0.22em;border:none;position:relative;overflow:hidden;transition:background 0.8s ease,transform 0.15s ease;-webkit-tap-highlight-color:transparent;background:var(--red);color:var(--white);}
-.btn-submit-main:active{transform:scale(0.98);}
-.btn-submit-main.loading{background:#1a1a1a;pointer-events:none;}
-.btn-submit-main.done{background:var(--blue);}
-.btn-inner{position:relative;z-index:1;}
-.back-btn{background:none;border:none;padding:0;font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:rgba(236,234,227,0.18);margin-bottom:48px;display:flex;align-items:center;gap:8px;transition:color 0.2s ease;-webkit-tap-highlight-color:transparent;}
-.back-btn:active{color:var(--white);}
-
-/* FORM FIELDS */
-.field{margin-bottom:14px;}
-.field-label{display:block;font-family:'Barlow Condensed',sans-serif;font-size:9px;letter-spacing:0.35em;text-transform:uppercase;color:rgba(236,234,227,0.22);margin-bottom:8px;}
-.field-input{width:100%;background:rgba(236,234,227,0.03);border:1px solid rgba(236,234,227,0.07);color:var(--white);font-family:'Barlow',sans-serif;font-size:16px;font-weight:300;padding:16px 18px;outline:none;border-radius:0;-webkit-appearance:none;transition:border-color 0.3s ease,background 0.3s ease;}
-.field-input::placeholder{color:rgba(236,234,227,0.1);font-size:14px;}
-.field-input:focus{border-color:rgba(194,0,14,0.5);background:rgba(194,0,14,0.02);}
-.field-input.ok{border-color:rgba(236,234,227,0.18);}
-.field-input.err{border-color:var(--red);animation:shake 0.3s ease;}
-.form-note{margin-top:16px;font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:0.1em;color:rgba(236,234,227,0.12);text-align:center;line-height:1.8;}
-
-/* INNER PAGES */
-.form-wrap{width:100%;max-width:420px;}
-.inner-wrap{width:100%;max-width:420px;animation:fadeUp 0.5s cubic-bezier(0.16,1,0.3,1) both;}
-.center-wrap{text-align:center;}
-.center-wrap .pg-sub{margin-left:auto;margin-right:auto;}
-.pg-phase{font-family:'Barlow Condensed',sans-serif;font-size:9px;letter-spacing:0.4em;text-transform:uppercase;color:var(--red);margin-bottom:12px;}
-.pg-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(58px,15vw,90px);line-height:0.82;color:var(--white);margin-bottom:20px;}
-.pg-sub{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:300;color:rgba(236,234,227,0.28);line-height:1.8;margin-bottom:40px;max-width:340px;}
-
-/* STATUS BOX */
-.status-box{border:1px solid;padding:20px;margin-bottom:28px;position:relative;}
-.status-box.blue-box{border-color:rgba(18,71,255,0.2);background:rgba(18,71,255,0.04);}
-.status-box.red-box{border-color:rgba(194,0,14,0.2);background:rgba(194,0,14,0.04);}
-.status-box.gold-box{border-color:rgba(200,169,110,0.2);background:rgba(200,169,110,0.04);}
-.sb-label{font-family:'Barlow Condensed',sans-serif;font-size:9px;letter-spacing:0.35em;text-transform:uppercase;color:rgba(236,234,227,0.2);margin-bottom:6px;}
-.sb-val{font-family:'Barlow Condensed',sans-serif;font-size:15px;color:var(--white);margin-bottom:14px;letter-spacing:0.03em;}
-.sb-divider{height:1px;background:rgba(236,234,227,0.06);margin-bottom:14px;}
-.sb-status-text{font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;}
-.st-blue{color:var(--blue2);}.st-red{color:var(--red);}.st-gold{color:var(--gold);}
-
-/* RING */
-.ring-icon{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 32px;}
-.ring-blue{border:1px solid var(--blue);animation:ringPulse 2.5s ease infinite;}
-.ring-red{border:1px solid var(--red);animation:redPulse 2.5s ease infinite;}
-.check-mark{width:18px;height:18px;border-right:2px solid var(--blue);border-bottom:2px solid var(--blue);transform:rotate(45deg) translate(-3px,-2px);}
-.x-mark{position:relative;width:18px;height:18px;}
-.x-mark::before,.x-mark::after{content:'';position:absolute;top:50%;left:0;width:100%;height:2px;background:var(--red);transform-origin:center;}
-.x-mark::before{transform:translateY(-50%) rotate(45deg);}
-.x-mark::after{transform:translateY(-50%) rotate(-45deg);}
-
-/* DAY TRACKER */
-.day-track{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:32px;}
-.day-block{aspect-ratio:1;border:1px solid rgba(194,0,14,0.15);background:rgba(194,0,14,0.04);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:13px;color:rgba(236,234,227,0.2);transition:all 0.3s ease;}
-.day-block.active{background:var(--red);border-color:var(--red);color:var(--white);}
-.day-block.done{background:rgba(18,71,255,0.15);border-color:rgba(18,71,255,0.3);color:var(--blue2);}
-
-/* PROGRESS */
-.progress-bar-wrap{margin-bottom:32px;}
-.progress-label{font-family:'Barlow Condensed',sans-serif;font-size:9px;letter-spacing:0.3em;text-transform:uppercase;color:rgba(236,234,227,0.2);margin-bottom:8px;display:flex;justify-content:space-between;}
-.progress-bar{height:1px;background:rgba(236,234,227,0.08);position:relative;}
-.progress-fill{position:absolute;top:0;left:0;height:100%;background:var(--red);transition:width 0.8s cubic-bezier(0.16,1,0.3,1);}
-
-/* TIME SLOTS */
-.time-grid{display:flex;flex-direction:column;gap:8px;margin-bottom:32px;}
-.time-slot{padding:18px 20px;background:rgba(236,234,227,0.03);border:1px solid rgba(236,234,227,0.07);display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:all 0.25s ease;-webkit-tap-highlight-color:transparent;}
-.time-slot.selected{background:rgba(194,0,14,0.08);border-color:var(--red);}
-.ts-time{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.1em;color:var(--white);}
-.ts-label{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:rgba(236,234,227,0.3);}
-.ts-dot{width:8px;height:8px;border-radius:50%;border:1px solid rgba(236,234,227,0.2);transition:all 0.2s ease;}
-.time-slot.selected .ts-dot{background:var(--red);border-color:var(--red);}
-
-/* PAYMENT */
-.payment-amount{font-family:'Bebas Neue',sans-serif;font-size:clamp(72px,18vw,110px);line-height:1;color:var(--white);text-align:center;margin:40px 0;animation:countUp 0.6s cubic-bezier(0.16,1,0.3,1) both;}
-.payment-amount .sym{font-size:0.45em;color:rgba(236,234,227,0.4);vertical-align:super;}
-
-/* SHIPPED */
-.shipped-status{display:flex;align-items:center;gap:12px;padding:16px 20px;margin-bottom:24px;background:rgba(200,169,110,0.06);border:1px solid rgba(200,169,110,0.15);animation:float 3s ease infinite;}
-.ss-dot{width:8px;height:8px;border-radius:50%;background:var(--gold);animation:pulse 1.5s ease infinite;}
-.ss-text{font-family:'Barlow Condensed',sans-serif;font-size:14px;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);}
-
-/* FAILED */
-.failed-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:4px;margin-bottom:32px;}
-.failed-cell{height:60px;background:rgba(194,0,14,0.06);border:1px solid rgba(194,0,14,0.12);display:flex;align-items:center;justify-content:center;}
-.failed-text{font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:0.3em;color:rgba(194,0,14,0.25);}
-
-/* COMPLETED */
-.completed-lines{margin-bottom:40px;}
-.comp-line{padding:14px 0;border-bottom:1px solid rgba(18,71,255,0.08);font-family:'Barlow Condensed',sans-serif;font-size:15px;color:rgba(236,234,227,0.3);display:flex;align-items:center;gap:12px;}
-.comp-check{width:14px;height:14px;flex-shrink:0;border-right:1.5px solid var(--blue2);border-bottom:1.5px solid var(--blue2);transform:rotate(45deg);margin-top:-4px;}
-</style>
+    /* Section padding and defaults */
+    .section {
+      padding: 4rem 1.5rem;
+    }
+  </style>
 </head>
-<body>
+<body class="bg-black text-white min-h-screen">
 
-<div class="scanline"></div>
-<div id="cursor"></div>
-<div id="cursor-ring"></div>
-<canvas id="dust"></canvas>
+  <!-- Hero Section -->
+  <section class="hero-bg min-h-screen flex items-center relative">
+    <div class="max-w-7xl mx-auto px-6 py-20 grid md:grid-cols-2 gap-14 items-center">
 
-<!-- ==================== LANDING ==================== -->
-<div id="pg-landing" class="pg on">
-  <nav>
-    <div class="logo">DAARK<span class="logo-reg">®</span></div>
-    <div class="nav-right"><div class="nav-dot"></div>Phase 01 — Live</div>
-  </nav>
+      <!-- Left Content -->
+      <div class="space-y-8">
+        <div class="flex items-center gap-3">
+          <span class="text-red-600 text-3xl font-bold tracking-tighter">DAARK®</span>
+          <span class="text-xs uppercase tracking-widest text-gray-400 ml-auto">No noise. No shortcuts.</span>
+        </div>
 
-  <!-- HERO -->
-  <section class="hero">
-    <div class="hero-bg"></div>
-    <div class="hero-grid"></div>
-    <div class="hero-num">DAARK Discipline System — Phase 01</div>
-    <h1 class="hero-h1">
-      <span class="glitch" data-text="YOU">YOU</span><br>
-      KNOW THE<br>
-      <span class="r">RIGHT</span><br>
-      PATH.
-    </h1>
-    <div class="hero-line"></div>
-    <p class="hero-body">
-      <strong>You just don't walk it.</strong><br>
-      You delay. You avoid. You quit.<br>
-      Then you repeat.
-    </p>
-    <div class="hero-cta">
-      <button class="btn btn-red" onclick="document.getElementById('form-anchor').scrollIntoView({behavior:'smooth'})">
-        <span class="btn-text">BEGIN PHASE 01</span>
-      </button>
-      <div class="hero-price">One time — <b>₹1,500</b> — Everything included</div>
+        <h1 class="text-6xl md:text-8xl leading-none heading-font font-bold">
+          YOU <span class="text-red-600">VS</span> YOU
+        </h1>
+
+        <div class="max-w-md text-lg text-gray-300">
+          <p class="mb-4">Most people fail.</p>
+          <p class="mb-4">Not because they lack effort.</p>
+          <p>Because they lack structure.</p>
+        </div>
+
+        <!-- Waitlist Form -->
+        <div class="bg-black/80 backdrop-blur-md border border-gray-800 p-8 rounded-2xl glow">
+          <form id="waitlistForm" class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <input 
+                  type="email" 
+                  id="email"
+                  placeholder="Email address"
+                  required
+                  class="w-full bg-transparent border border-gray-700 focus:border-red-600 rounded-xl px-5 py-4 outline-none transition-all text-white placeholder-gray-500"
+                >
+              </div>
+              <div>
+                <input 
+                  type="tel" 
+                  id="phone"
+                  placeholder="Phone number"
+                  class="w-full bg-transparent border border-gray-700 focus:border-red-600 rounded-xl px-5 py-4 outline-none transition-all text-white placeholder-gray-500"
+                >
+              </div>
+            </div>
+
+            <button 
+              type="submit"
+              id="submitBtn"
+              class="w-full bg-white hover:bg-amber-300 text-black font-semibold py-5 rounded-2xl transition-all active:scale-95 flex items-center justify-center gap-3"
+            >
+              JOIN WAITLIST
+            </button>
+          </form>
+        </div>
+
+        <!-- Stats -->
+        <div class="flex flex-wrap gap-8 text-center">
+          <div>
+            <div id="days" class="text-4xl md:text-5xl font-bold tabular-nums">06</div>
+            <div class="text-xs tracking-widest text-gray-500">DAYS</div>
+          </div>
+          <div>
+            <div id="hours" class="text-4xl md:text-5xl font-bold tabular-nums">14</div>
+            <div class="text-xs tracking-widest text-gray-500">HOURS</div>
+          </div>
+          <div>
+            <div id="minutes" class="text-4xl md:text-5xl font-bold tabular-nums">37</div>
+            <div class="text-xs tracking-widest text-gray-500">MINUTES</div>
+          </div>
+          <div>
+            <div id="seconds" class="text-4xl md:text-5xl font-bold tabular-nums">52</div>
+            <div class="text-xs tracking-widest text-gray-500">SECONDS</div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-4 text-sm">
+          <div class="flex -space-x-3">
+            <div class="w-8 h-8 bg-gray-700 border-2 border-black rounded-full flex items-center justify-center text-xs">👤</div>
+            <div class="w-8 h-8 bg-gray-700 border-2 border-black rounded-full flex items-center justify-center text-xs">👤</div>
+            <div class="w-8 h-8 bg-gray-700 border-2 border-black rounded-full flex items-center justify-center text-xs">👤</div>
+          </div>
+          <div>
+            Already <span id="joinedCount" class="font-semibold text-amber-300">142</span> joined
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Side Image -->
+      <div class="hidden md:block relative">
+        <div class="aspect-video bg-zinc-950 rounded-3xl overflow-hidden border border-gray-800 shadow-2xl glow">
+          <img 
+            src="https://picsum.photos/id/1015/800/600" 
+            alt="DAARK Doorway" 
+            class="w-full h-full object-cover opacity-90"
+          >
+          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-amber-300/10 to-transparent"></div>
+        </div>
+      </div>
     </div>
-    <div class="scroll-ind">
-      <div class="scroll-line"></div>
-      <span>Scroll</span>
+
+    <!-- Footer tagline -->
+    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 text-xs text-gray-500 tracking-widest">
+      DISCIPLINE IS THE ONLY WAY OUT
     </div>
   </section>
 
-  <!-- MARQUEE -->
-  <div class="mq-wrap">
-    <div class="mq-track">
-      <span>DISCIPLINE</span><span class="sep">●</span><span>COMPLIANCE</span><span class="sep">●</span><span>AUTHORITY</span><span class="sep">●</span><span>NO NEGOTIATION</span><span class="sep">●</span><span>YOU VS YOU</span><span class="sep">●</span><span>PHASE 01</span><span class="sep">●</span><span>DAARK</span><span class="sep">●</span><span>DISCIPLINE</span><span class="sep">●</span><span>COMPLIANCE</span><span class="sep">●</span><span>AUTHORITY</span><span class="sep">●</span><span>NO NEGOTIATION</span><span class="sep">●</span><span>YOU VS YOU</span><span class="sep">●</span><span>PHASE 01</span><span class="sep">●</span><span>DAARK</span><span class="sep">●</span>
-    </div>
-  </div>
+  <!-- Features Section -->
+  <section class="section bg-zinc-900">
+    <div class="max-w-6xl mx-auto text-center">
+      <h2 class="text-4xl md:text-5xl font-bold heading-font mb-4">How DAARK Works</h2>
+      <p class="text-gray-400 text-lg max-w-2xl mx-auto mb-12">
+        Simple structure, hard results. No fluff, no fake “hacks”.
+      </p>
 
-  <!-- YOU VS YOU -->
-  <section class="product-sec">
-    <div class="sec-tag">The System</div>
-    <div class="prod-title rv">
-      YOU<span class="vs">vs</span>YOU
-    </div>
-    <p class="prod-desc rv">
-      A physical manual that forces execution.<br><br>
-      No theory. No motivation.<br><br>
-      You already know what to do.<br>
-      You don't do it.<br><br>
-      This ends that.<br><br>
-      Which version are you going to obey?
-    </p>
-    <div class="prod-grid rv">
-      <div class="prod-feat"><div class="pf-icon">📦</div><div class="pf-name">Physical Product</div><div class="pf-sub">Ships to you</div></div>
-      <div class="prod-feat"><div class="pf-icon">🔑</div><div class="pf-name">Unique Codes</div><div class="pf-sub">Inside the product</div></div>
-      <div class="prod-feat"><div class="pf-icon">🔴</div><div class="pf-name">7-Day Challenge</div><div class="pf-sub">Daily submission</div></div>
-      <div class="prod-feat"><div class="pf-icon">⚡</div><div class="pf-name">Tracked System</div><div class="pf-sub">Every single day</div></div>
+      <div class="grid md:grid-cols-3 gap-8">
+        <div class="p-8 rounded-2xl border border-gray-800 bg-black/50">
+          <div class="text-6xl mb-4">🎯</div>
+          <h3 class="text-xl font-semibold mb-2">Daily Targets</h3>
+          <p class="text-gray-400">Clear, measurable goals so you know exactly what “done” looks like.</p>
+        </div>
+
+        <div class="p-8 rounded-2xl border border-gray-800 bg-black/50">
+          <div class="text-6xl mb-4">⏱️</div>
+          <h3 class="text-xl font-semibold mb-2">Time Blocks</h3>
+          <p class="text-gray-400">Structured time slots that protect deep work and eliminate distractions.</p>
+        </div>
+
+        <div class="p-8 rounded-2xl border border-gray-800 bg-black/50">
+          <div class="text-6xl mb-4">📊</div>
+          <h3 class="text-xl font-semibold mb-2">Progress Tracking</h3>
+          <p class="text-gray-400">Real‑time metrics so you see your edge grow, week after week.</p>
+        </div>
+      </div>
     </div>
   </section>
 
-  <!-- FORM -->
-  <section class="form-sec" id="form-anchor">
-    <div class="form-sec-tag">Initiate Phase 01</div>
-    <h2 class="form-sec-title rv">ENTER<br>THE SYSTEM</h2>
-    <p class="form-sec-sub rv">No negotiation. Register now.<br>Product ships within 24 hours.</p>
-    <div class="field rv">
-      <label class="field-label" for="f-email">Email Address</label>
-      <input type="email" id="f-email" class="field-input" placeholder="your@email.com" autocomplete="email"/>
-    </div>
-    <div class="field rv d1">
-      <label class="field-label" for="f-phone">Phone Number</label>
-      <input type="tel" id="f-phone" class="field-input" placeholder="+91 00000 00000" autocomplete="tel"/>
-    </div>
-    <div class="rv d2">
-      <button class="btn-submit-main" id="entry-btn" onclick="handleEntry()">
-        <span class="btn-inner" id="entry-txt">INITIATE PHASE 01</span>
-      </button>
-    </div>
-    <p class="form-note rv d3">Secured. Never sold.<br>Registration → Payment → Product → 7-Day Challenge</p>
-  </section>
-</div>
+  <!-- Footer -->
+  <footer class="py-8 border-t border-gray-800 text-center text-sm text-gray-500">
+    Built with pure HTML + Tailwind CSS. No bundler, no framework.
+  </footer>
 
-<!-- ==================== SUCCESS ==================== -->
-<div id="pg-success" class="pg fc">
-  <div class="inner-wrap center-wrap">
-    <div class="ring-icon ring-blue"><div class="check-mark"></div></div>
-    <div class="pg-phase">Registration Complete</div>
-    <h1 class="pg-title" style="color:var(--blue2);">YOU'RE<br>IN.</h1>
-    <p class="pg-sub" style="margin:0 auto 32px;">Registration recorded. The system knows you exist.<br>But you're not done yet.</p>
-    <div class="status-box blue-box">
-      <div class="sb-label">Registered As</div>
-      <div class="sb-val" id="s-email">—</div>
-      <div class="sb-divider"></div>
-      <div class="sb-label">Status</div>
-      <div class="sb-status-text st-blue">REGISTERED — PAYMENT REQUIRED</div>
-    </div>
-    <button class="btn btn-red btn-full" onclick="go('payment')">
-      <span class="btn-text">COMPLETE PAYMENT — ₹1,500</span>
-    </button>
-  </div>
-</div>
+  <!-- Scripts -->
+  <script>
+    // Countdown Timer (7 days from now)
+    function startCountdown() {
+      let targetDate = new Date().getTime() + (7 * 24 * 60 * 60 * 1000);
 
-<!-- ==================== PAYMENT ==================== -->
-<div id="pg-payment" class="pg fc">
-  <div class="inner-wrap center-wrap">
-    <div class="pg-phase">Phase 01 — Payment</div>
-    <h1 class="pg-title">ONE<br>REQUIREMENT.</h1>
-    <div class="payment-amount"><span class="sym">₹</span>1,500</div>
-    <div class="status-box red-box" style="text-align:left;">
-      <div class="sb-label">What you receive</div>
-      <div class="sb-val">Physical Product + 7-Day Challenge</div>
-      <div class="sb-divider"></div>
-      <div class="sb-label">Includes</div>
-      <div class="sb-status-text" style="color:rgba(236,234,227,0.4);font-size:13px;line-height:1.8;">1 Activation Code · 7 Daily Codes · Rulebook · Tracked System</div>
-    </div>
-    <!-- REPLACE WITH RAZORPAY LINK WHEN KYC CLEARS -->
-    <a href="YOUR_RAZORPAY_LINK_HERE" style="text-decoration:none;display:block;margin-bottom:12px;">
-      <button class="btn btn-red btn-full"><span class="btn-text">PROCEED TO PAYMENT</span></button>
-    </a>
-    <p class="form-note">Secured by Razorpay · UPI · Cards · NetBanking</p>
-    <button class="back-btn" style="margin-top:24px;justify-content:center;" onclick="go('success')">← Back</button>
-  </div>
-</div>
+      const timer = setInterval(() => {
+        let now = new Date().getTime();
+        let distance = targetDate - now;
 
-<!-- ==================== PAID ==================== -->
-<div id="pg-paid" class="pg fc">
-  <div class="inner-wrap center-wrap">
-    <div class="ring-icon" style="border:1px solid var(--gold);box-shadow:0 0 24px rgba(200,169,110,0.15);">
-      <span style="font-size:20px;color:var(--gold);">✓</span>
-    </div>
-    <div class="pg-phase" style="color:var(--gold);">Payment Confirmed</div>
-    <h1 class="pg-title" style="color:var(--gold);">PAYMENT<br>CONFIRMED.</h1>
-    <p class="pg-sub" style="margin:0 auto 28px;">Order created. Product being prepared.<br>Shipping within 24 hours.</p>
-    <div class="shipped-status"><div class="ss-dot"></div><div class="ss-text">Order Processing — Shipping Soon</div></div>
-    <div class="status-box gold-box" style="text-align:left;">
-      <div class="sb-label">Next Step</div>
-      <div class="sb-status-text" style="color:var(--gold);font-size:13px;line-height:1.9;text-transform:none;letter-spacing:0.03em;">Wait for your product to arrive.<br>Inside: Activation Code + 7 Daily Codes + Rulebook.<br>Return to daark.io to activate.</div>
-    </div>
-  </div>
-</div>
+        if (distance < 0) {
+          clearInterval(timer);
+          return;
+        }
 
-<!-- ==================== ACTIVATE ==================== -->
-<div id="pg-activate" class="pg fc">
-  <div class="form-wrap">
-    <button class="back-btn" onclick="go('paid')">← Back</button>
-    <div class="pg-phase">Phase 01 — Activation</div>
-    <h1 class="pg-title">ACTIVATE<br>THE<br>SYSTEM</h1>
-    <p class="pg-sub">Enter the activation code found inside your DAARK product.</p>
-    <div class="field">
-      <label class="field-label" for="f-em2">Your Registered Email</label>
-      <input type="email" id="f-em2" class="field-input" placeholder="your@email.com" autocomplete="email"/>
-    </div>
-    <div class="field">
-      <label class="field-label" for="f-code">Activation Code</label>
-      <input type="text" id="f-code" class="field-input" placeholder="DAARK-XXXX-XXXX" autocomplete="off" style="letter-spacing:0.15em;font-size:18px;text-transform:uppercase;"/>
-    </div>
-    <button class="btn-submit-main" id="activate-btn" onclick="handleActivate()">
-      <span class="btn-inner" id="activate-txt">ACTIVATE SYSTEM</span>
-    </button>
-    <p class="form-note">Each code works once. Email must match registered account.</p>
-  </div>
-</div>
+        let days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        let seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-<!-- ==================== TIME WINDOW ==================== -->
-<div id="pg-time" class="pg fc">
-  <div class="form-wrap">
-    <div class="pg-phase">Phase 01 — Time Lock</div>
-    <h1 class="pg-title">SELECT<br>YOUR<br>WINDOW</h1>
-    <p class="pg-sub">Locked for all 7 days. No exceptions.</p>
-    <div class="time-grid">
-      <div class="time-slot" onclick="selectTime(this,'05:00–07:00')"><div><div class="ts-time">05:00 – 07:00</div><div class="ts-label">Early Morning</div></div><div class="ts-dot"></div></div>
-      <div class="time-slot" onclick="selectTime(this,'07:00–09:00')"><div><div class="ts-time">07:00 – 09:00</div><div class="ts-label">Morning</div></div><div class="ts-dot"></div></div>
-      <div class="time-slot" onclick="selectTime(this,'12:00–14:00')"><div><div class="ts-time">12:00 – 14:00</div><div class="ts-label">Midday</div></div><div class="ts-dot"></div></div>
-      <div class="time-slot" onclick="selectTime(this,'18:00–20:00')"><div><div class="ts-time">18:00 – 20:00</div><div class="ts-label">Evening</div></div><div class="ts-dot"></div></div>
-      <div class="time-slot" onclick="selectTime(this,'21:00–23:00')"><div><div class="ts-time">21:00 – 23:00</div><div class="ts-label">Night</div></div><div class="ts-dot"></div></div>
-    </div>
-    <button class="btn-submit-main" id="time-btn" onclick="handleTime()" style="background:#1a1a1a;pointer-events:none;">
-      <span class="btn-inner" id="time-txt">SELECT A TIME FIRST</span>
-    </button>
-  </div>
-</div>
+        document.getElementById("days").textContent = String(days).padStart(2, '0');
+        document.getElementById("hours").textContent = String(hours).padStart(2, '0');
+        document.getElementById("minutes").textContent = String(minutes).padStart(2, '0');
+        document.getElementById("seconds").textContent = String(seconds).padStart(2, '0');
+      }, 1000);
+    }
 
-<!-- ==================== DAILY SUBMIT ==================== -->
-<div id="pg-submit" class="pg fc">
-  <div class="form-wrap">
-    <div class="pg-phase" id="submit-phase">Day 1 of 7 — Daily Submission</div>
-    <h1 class="pg-title" id="submit-title">DAY<br><span id="day-num" style="color:var(--red);">1</span>.</h1>
-    <div class="day-track" id="day-track">
-      <div class="day-block active" data-d="1">D1</div>
-      <div class="day-block" data-d="2">D2</div>
-      <div class="day-block" data-d="3">D3</div>
-      <div class="day-block" data-d="4">D4</div>
-      <div class="day-block" data-d="5">D5</div>
-      <div class="day-block" data-d="6">D6</div>
-      <div class="day-block" data-d="7">D7</div>
-    </div>
-    <div class="progress-bar-wrap">
-      <div class="progress-label"><span>Progress</span><span id="progress-pct">0%</span></div>
-      <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
-    </div>
-    <div class="field">
-      <label class="field-label" for="f-daily-code">Today's Code (from product)</label>
-      <input type="text" id="f-daily-code" class="field-input" placeholder="CODE-XXXX" autocomplete="off" style="letter-spacing:0.15em;text-transform:uppercase;"/>
-    </div>
-    <div class="field">
-      <label class="field-label" for="f-answers">Today's Challenge Answers</label>
-      <textarea id="f-answers" class="field-input" placeholder="Write your answers here..." rows="5" style="resize:none;line-height:1.6;"></textarea>
-    </div>
-    <button class="btn-submit-main" id="submit-btn" onclick="handleSubmit()">
-      <span class="btn-inner" id="submit-txt">SUBMIT DAY <span id="submit-day-num">1</span></span>
-    </button>
-    <p class="form-note" id="time-window-note">Submission window: Loading...</p>
-  </div>
-</div>
+    // Form Submission (mock)
+    document.getElementById("waitlistForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
 
-<!-- ==================== FAILED ==================== -->
-<div id="pg-failed" class="pg fc">
-  <div class="inner-wrap center-wrap">
-    <div class="ring-icon ring-red"><div class="x-mark"></div></div>
-    <div class="pg-phase" style="color:var(--red);">System Terminated</div>
-    <h1 class="pg-title" style="color:var(--red);">ACCESS<br>LOCKED.</h1>
-    <p class="pg-sub" style="margin:0 auto 32px;">You failed to comply.<br>No retry. No second chance.<br>The system ends here.</p>
-    <div class="failed-grid">
-      <div class="failed-cell"><div class="failed-text">NO RETRY</div></div>
-      <div class="failed-cell"><div class="failed-text">NO EXCUSE</div></div>
-      <div class="failed-cell"><div class="failed-text">SYSTEM END</div></div>
-      <div class="failed-cell"><div class="failed-text">ACCESS VOID</div></div>
-    </div>
-    <div class="status-box red-box" style="text-align:left;">
-      <div class="sb-label">Final Status</div>
-      <div class="sb-val" style="color:var(--red);">FAILED</div>
-      <div class="sb-divider"></div>
-      <div class="sb-status-text st-red">Challenge Terminated — No Further Access</div>
-    </div>
-  </div>
-</div>
+      const email = document.getElementById("email").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const btn = document.getElementById("submitBtn");
 
-<!-- ==================== COMPLETED ==================== -->
-<div id="pg-completed" class="pg fc">
-  <div class="inner-wrap center-wrap">
-    <div class="ring-icon ring-blue" style="animation:ringPulse 2s ease infinite;"><div class="check-mark"></div></div>
-    <div class="pg-phase" style="color:var(--blue2);">Phase 01 — Complete</div>
-    <h1 class="pg-title" style="color:var(--blue2);">PHASE 01<br>COMPLETE.</h1>
-    <p class="pg-sub" style="margin:0 auto 32px;">You did what most won't.<br>7 days. Every code. Every answer.<br>The system recognises you.</p>
-    <div class="completed-lines">
-      <div class="comp-line"><div class="comp-check"></div>7 Days Completed</div>
-      <div class="comp-line"><div class="comp-check"></div>All Codes Verified</div>
-      <div class="comp-line"><div class="comp-check"></div>All Answers Submitted</div>
-      <div class="comp-line"><div class="comp-check"></div>Status: Verified Executor</div>
-    </div>
-    <div class="status-box blue-box" style="text-align:left;">
-      <div class="sb-label">Final Status</div>
-      <div class="sb-val" style="color:var(--blue2);">COMPLETED</div>
-      <div class="sb-divider"></div>
-      <div class="sb-status-text st-blue">Phase 02 Access — Coming Soon</div>
-    </div>
-    <p class="form-note" style="margin-top:20px;">You will be notified when Phase 02 opens.<br>Only verified executors gain access.</p>
-  </div>
-</div>
+      if (!email) {
+        alert("Please enter your email address");
+        return;
+      }
 
-<script>
-// PARTICLES
-const cv=document.getElementById('dust'),cx=cv.getContext('2d');
-function rsz(){cv.width=window.innerWidth;cv.height=window.innerHeight;}
-rsz();window.addEventListener('resize',rsz);
-const P=Array.from({length:110},()=>({x:Math.random()*window.innerWidth,y:Math.random()*window.innerHeight,r:Math.random()*1.1+0.15,vx:(Math.random()-.5)*.1,vy:-(Math.random()*.14+.03),a:Math.random()*.16+.03,w:Math.random()>.5}));
-(function frame(){cx.clearRect(0,0,cv.width,cv.height);P.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.y<-4){p.y=cv.height+4;p.x=Math.random()*cv.width;}if(p.x<-4)p.x=cv.width+4;if(p.x>cv.width+4)p.x=-4;cx.beginPath();cx.arc(p.x,p.y,p.r,0,Math.PI*2);cx.fillStyle=p.w?`rgba(255,255,255,${p.a})`:`rgba(194,0,14,${p.a*.55})`;cx.fill();});requestAnimationFrame(frame);})();
+      btn.innerHTML = "JOINING...";
+      btn.disabled = true;
 
-// CURSOR
-const cur=document.getElementById('cursor'),curR=document.getElementById('cursor-ring');
-let mx=0,my=0,rx=0,ry=0;
-document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px';});
-(function curLoop(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;curR.style.left=rx+'px';curR.style.top=ry+'px';requestAnimationFrame(curLoop);})();
+      // Simulate a backend API call
+      setTimeout(() => {
+        alert("✅ You're in! Welcome to DAARK.");
+        let count = parseInt(document.getElementById("joinedCount").textContent);
+        document.getElementById("joinedCount").textContent = count + 1;
 
-// SCROLL REVEAL
-const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('on');});},{threshold:0.12});
-document.querySelectorAll('#pg-landing .rv').forEach(el=>obs.observe(el));
+        btn.innerHTML = "JOIN WAITLIST";
+        btn.disabled = false;
+      }, 800);
+    });
 
-// NAVIGATION
-function go(page){
-  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
-  document.getElementById('pg-'+page).classList.add('on');
-  window.scrollTo(0,0);
-}
+    // Initialize
+    startCountdown();
 
-// STATE
-let STATE={email:'',phone:'',currentDay:1,timeWindow:'',activationCode:''};
-const WEBHOOK='https://hook.eu1.make.com/p8hb33mktmqb9f4v9zp3dxohri257p9q';
-
-// INPUT VALIDATION
-document.getElementById('f-email').addEventListener('input',function(){this.className='field-input'+(this.value.includes('@')?' ok':'');});
-document.getElementById('f-phone').addEventListener('input',function(){this.className='field-input'+(this.value.replace(/\D/g,'').length>=8?' ok':'');});
-
-// ENTRY
-async function handleEntry(){
-  const email=document.getElementById('f-email').value.trim();
-  const phone=document.getElementById('f-phone').value.trim();
-  const btn=document.getElementById('entry-btn');
-  const txt=document.getElementById('entry-txt');
-  if(!email||!email.includes('@')){document.getElementById('f-email').className='field-input err';document.getElementById('f-email').focus();return;}
-  if(!phone||phone.replace(/\D/g,'').length<8){document.getElementById('f-phone').className='field-input err';document.getElementById('f-phone').focus();return;}
-  btn.className='btn-submit-main loading';txt.textContent='INITIATING...';
-  try{
-    await fetch(WEBHOOK,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,phone,status:'initiated',source:'daark.io',timestamp:new Date().toISOString()})});
-    STATE.email=email;STATE.phone=phone;
-    btn.className='btn-submit-main done';txt.textContent='INITIATED ✓';
-    setTimeout(()=>{document.getElementById('s-email').textContent=email;go('success');},900);
-  }catch(e){btn.className='btn-submit-main';txt.textContent='ERROR — TRY AGAIN';setTimeout(()=>{txt.textContent='INITIATE PHASE 01';},2500);}
-}
-
-// ACTIVATE
-async function handleActivate(){
-  const email=document.getElementById('f-em2').value.trim();
-  const code=document.getElementById('f-code').value.trim().toUpperCase();
-  const btn=document.getElementById('activate-btn');
-  const txt=document.getElementById('activate-txt');
-  if(!email||!email.includes('@')){document.getElementById('f-em2').className='field-input err';document.getElementById('f-em2').focus();return;}
-  if(!code||code.length<6){document.getElementById('f-code').className='field-input err';document.getElementById('f-code').focus();return;}
-  btn.className='btn-submit-main loading';txt.textContent='VALIDATING CODE...';
-  try{
-    await fetch(WEBHOOK,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,activation_code:code,status:'active',current_day:1,timestamp:new Date().toISOString()})});
-    STATE.email=email;STATE.activationCode=code;
-    btn.className='btn-submit-main done';txt.textContent='CODE ACCEPTED ✓';
-    setTimeout(()=>go('time'),900);
-  }catch(e){btn.className='btn-submit-main';txt.textContent='INVALID CODE';setTimeout(()=>{txt.textContent='ACTIVATE SYSTEM';},2500);}
-}
-
-// TIME
-function selectTime(el,win){
-  document.querySelectorAll('.time-slot').forEach(s=>s.classList.remove('selected'));
-  el.classList.add('selected');STATE.timeWindow=win;
-  const btn=document.getElementById('time-btn');
-  btn.className='btn-submit-main';btn.style.pointerEvents='auto';
-  document.getElementById('time-txt').textContent='LOCK TIME WINDOW';
-}
-async function handleTime(){
-  if(!STATE.timeWindow)return;
-  const btn=document.getElementById('time-btn'),txt=document.getElementById('time-txt');
-  btn.className='btn-submit-main loading';txt.textContent='LOCKING WINDOW...';
-  try{
-    await fetch(WEBHOOK,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:STATE.email,time_window:STATE.timeWindow,status:'time_set',timestamp:new Date().toISOString()})});
-    btn.className='btn-submit-main done';txt.textContent='WINDOW LOCKED ✓';
-    setTimeout(()=>{updateSubmitPage();go('submit');},900);
-  }catch(e){btn.className='btn-submit-main';txt.textContent='ERROR';setTimeout(()=>{txt.textContent='LOCK TIME WINDOW';},2500);}
-}
-
-// UPDATE SUBMIT PAGE
-function updateSubmitPage(){
-  const d=STATE.currentDay;
-  document.getElementById('submit-phase').textContent=`Day ${d} of 7 — Daily Submission`;
-  document.getElementById('submit-title').innerHTML=`DAY<br><span id="day-num" style="color:var(--red);">${d}</span>.`;
-  document.getElementById('submit-day-num').textContent=d;
-  document.getElementById('time-window-note').textContent=`Submission window: ${STATE.timeWindow||'—'}`;
-  const pct=Math.round(((d-1)/7)*100);
-  document.getElementById('progress-pct').textContent=pct+'%';
-  document.getElementById('progress-fill').style.width=pct+'%';
-  document.querySelectorAll('.day-block').forEach(b=>{const bd=parseInt(b.dataset.d);b.className='day-block'+(bd<d?' done':bd===d?' active':'');});
-  document.getElementById('f-daily-code').value='';
-  document.getElementById('f-answers').value='';
-  document.getElementById('submit-btn').className='btn-submit-main';
-  document.getElementById('submit-txt').innerHTML=`SUBMIT DAY <span id="submit-day-num">${d}</span>`;
-}
-
-// DAILY SUBMIT
-async function handleSubmit(){
-  const code=document.getElementById('f-daily-code').value.trim().toUpperCase();
-  const answers=document.getElementById('f-answers').value.trim();
-  const btn=document.getElementById('submit-btn'),txt=document.getElementById('submit-txt');
-  if(!code){document.getElementById('f-daily-code').className='field-input err';document.getElementById('f-daily-code').focus();return;}
-  if(!answers||answers.length<10){document.getElementById('f-answers').className='field-input err';document.getElementById('f-answers').focus();return;}
-  btn.className='btn-submit-main loading';txt.textContent='SUBMITTING...';
-  try{
-    await fetch(WEBHOOK,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:STATE.email,day_number:STATE.currentDay,code_entered:code,answers,time_window:STATE.timeWindow,timestamp:new Date().toISOString()})});
-    btn.className='btn-submit-main done';txt.textContent='DAY '+STATE.currentDay+' SUBMITTED ✓';
-    setTimeout(()=>{if(STATE.currentDay>=7){go('completed');}else{STATE.currentDay++;updateSubmitPage();}},1200);
-  }catch(e){btn.className='btn-submit-main';txt.textContent='SYSTEM REJECTED — CODE INVALID';setTimeout(()=>go('failed'),1500);}
-}
-
-// KEYBOARD
-document.addEventListener('keydown',e=>{
-  if(e.key!=='Enter')return;
-  const a=document.querySelector('.pg.on');if(!a)return;
-  if(a.id==='pg-landing')handleEntry();
-  if(a.id==='pg-activate')handleActivate();
-  if(a.id==='pg-submit')handleSubmit();
-});
-</script>
+    // Simulate joined count increasing slowly
+    setInterval(() => {
+      let countEl = document.getElementById("joinedCount");
+      let count = parseInt(countEl.textContent);
+      if (Math.random() > 0.7) countEl.textContent = count + 1;
+    }, 8000);
+  </script>
 </body>
 </html>
