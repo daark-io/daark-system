@@ -1,213 +1,154 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DAARK - You vs You</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-    
-    body {
-      font-family: 'Inter', sans-serif;
-    }
-    
-    .star-bg {
-      background-image: 
-        radial-gradient(circle, #ffffff 1px, transparent 1px),
-        radial-gradient(circle, #ffffff 1px, transparent 1px);
-      background-size: 80px 80px;
-      background-position: 0 0, 40px 40px;
-      animation: drift 80s linear infinite;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DAARK</title>
 
-    @keyframes drift {
-      from { background-position: 0 0, 40px 40px; }
-      to { background-position: 200px 200px, 240px 240px; }
-    }
+<style>
+body {
+  margin: 0;
+  background: black;
+  color: white;
+  font-family: Arial, sans-serif;
+  overflow: hidden;
+}
 
-    .shooting-star {
-      position: absolute;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, #ffffff, transparent);
-      box-shadow: 0 0 10px #ffffff;
-      animation: shoot 3s linear infinite;
-    }
+/* STARFIELD /
+.starfield {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(white 1px, transparent 1px);
+  background-size: 3px 3px;
+  opacity: 0.15;
+  animation: drift 40s linear infinite;
+}
 
-    @keyframes shoot {
-      0% { transform: translateX(-100vw) translateY(0); opacity: 0; }
-      10% { opacity: 1; }
-      90% { opacity: 1; }
-      100% { transform: translateX(200vw) translateY(30px); opacity: 0; }
-    }
+.starfield.fast {
+  animation-duration: 2s;
+  opacity: 0.4;
+}
 
-    .door {
-      transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-  </style>
+@keyframes drift {
+  from { transform: translateY(0); }
+  to { transform: translateY(-1000px); }
+}
+
+/ CENTER CONTENT /
+.container {
+  position: relative;
+  z-index: 2;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/ TEXT /
+h1 {
+  font-size: 40px;
+  margin: 10px 0;
+}
+
+.red {
+  color: #ff5a00;
+}
+
+/ INPUT /
+input {
+  margin: 5px;
+  padding: 12px;
+  width: 250px;
+  background: #111;
+  border: 1px solid #333;
+  color: white;
+  outline: none;
+}
+
+/ BUTTON /
+button {
+  margin-top: 10px;
+  padding: 12px 30px;
+  background: #ff5a00;
+  border: none;
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  box-shadow: 0 0 20px rgba(255,90,0,0.6);
+}
+
+/ DOOR /
+.door {
+  margin-top: 30px;
+  width: 140px;
+  height: 260px;
+  background: #0a0a0a;
+  border: 1px solid rgba(255,90,0,0.3);
+  box-shadow: 0 0 10px rgba(255,90,0,0.1);
+  transition: all 0.6s ease;
+}
+
+/ ACTIVE (CLICK) /
+.door.active {
+  background: radial-gradient(#ff5a00, #ff2e00);
+  box-shadow: 0 0 80px rgba(255,80,0,1);
+}
+
+/ SUCCESS */
+.door.success {
+  background: radial-gradient(#ffffff, #f5e6c8);
+  box-shadow: 0 0 120px rgba(255,255,255,1);
+}
+</style>
 </head>
-<body class="bg-black text-white min-h-screen overflow-hidden relative">
 
-  <!-- Background -->
-  <div class="star-bg absolute inset-0 opacity-30"></div>
+<body>
 
-  <!-- Shooting Stars Container -->
-  <div id="stars" class="absolute inset-0 pointer-events-none"></div>
+<div id="stars" class="starfield"></div>
 
-  <div class="relative z-10 min-h-screen flex items-center justify-center p-6">
-    <div class="max-w-lg w-full">
+<div class="container">
 
-      <!-- Header -->
-      <div class="flex justify-end gap-4 mb-8">
-        <button onclick="closeModal()" class="w-10 h-10 rounded-full bg-zinc-900 flex items-center justify-center text-xl hover:bg-zinc-800 transition">✕</button>
-        <button class="w-10 h-10 rounded-full bg-zinc-900 flex items-center justify-center text-xl hover:bg-zinc-800 transition">↓</button>
-      </div>
+<h1><span class="red">YOU</span> VS <span class="red">YOU</span></h1>
 
-      <!-- Main Content -->
-      <div class="text-center">
-        <h1 class="text-7xl font-bold tracking-tighter mb-1">
-          D<span class="text-orange-500">A</span>ARK
-        </h1>
-        <p class="text-xl tracking-widest text-zinc-400 mb-8">YOU VS YOU</p>
+<p>
+Most people fail.<br>
+Not because they lack effort.<br>
+Because they lack structure.
+</p>
 
-        <p class="text-3xl font-light mb-2">The journey begins within.</p>
-        <p class="text-zinc-400 mb-10 text-lg">
-          Most people fail.<br>
-          Not because they lack effort.<br>
-          Because they lack structure.
-        </p>
+<input placeholder="Email">
+<input placeholder="Phone">
 
-        <!-- Door -->
-        <div class="flex justify-center mb-10">
-          <div id="door-container" class="relative w-52 h-80">
-            <div id="door" 
-                 class="door absolute inset-0 bg-gradient-to-b from-orange-600 via-red-700 to-black rounded-3xl border border-zinc-600 shadow-2xl overflow-hidden">
-              <div class="absolute inset-0 flex items-center justify-center">
-                <div class="w-5 h-40 bg-black/40 rounded-full"></div>
-              </div>
-            </div>
-          </div>
-        </div>
+<button onclick="handleSubmit()">JOIN WAITLIST</button>
 
-        <!-- Form -->
-        <div id="form-section">
-          <form onsubmit="submitForm(event)" class="space-y-4 max-w-sm mx-auto">
-            <div class="relative">
-              <i class="fa-solid fa-envelope absolute left-4 top-4 text-zinc-400"></i>
-              <input type="email" id="email" 
-                     class="w-full bg-zinc-900 border border-zinc-700 rounded-2xl px-12 py-4 focus:outline-none focus:border-orange-500 transition"
-                     placeholder="Enter your email" required>
-            </div>
-            
-            <div class="relative">
-              <i class="fa-solid fa-phone absolute left-4 top-4 text-zinc-400"></i>
-              <input type="tel" id="phone" 
-                     class="w-full bg-zinc-900 border border-zinc-700 rounded-2xl px-12 py-4 focus:outline-none focus:border-orange-500 transition"
-                     value="+91 98765 43210">
-            </div>
+<div id="door" class="door"></div>
 
-            <button type="submit" id="join-btn"
-                    class="w-full bg-orange-600 hover:bg-orange-500 transition py-4 rounded-2xl font-semibold text-lg flex items-center justify-center gap-2">
-              JOIN WAITLIST
-              <i class="fa-solid fa-arrow-right"></i>
-            </button>
-          </form>
-        </div>
+<h2 id="successText" style="display:none;">YOU’RE IN</h2>
 
-        <!-- Success Message -->
-        <div id="success-section" class="hidden text-center">
-          <div class="text-6xl mb-6">✨</div>
-          <h2 class="text-5xl font-bold mb-3">YOU'RE IN.</h2>
-          <p class="text-xl text-zinc-400 mb-8">The journey begins within.</p>
-          
-          <button onclick="resetDemo()" 
-                  class="px-8 py-3 border border-zinc-600 hover:border-white rounded-full flex items-center gap-2 mx-auto transition">
-            <i class="fa-solid fa-house"></i> BACK TO HOME
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
+</div>
 
-  <script>
-    // Create shooting stars
-    function createShootingStars() {
-      const container = document.getElementById('stars');
-      for (let i = 0; i < 8; i++) {
-        const star = document.createElement('div');
-        star.className = 'shooting-star';
-        star.style.top = Math.random() * 100 + '%';
-        star.style.width = (Math.random() * 120 + 60) + 'px';
-        star.style.animationDelay = '-' + Math.random() * 4 + 's';
-        star.style.opacity = Math.random() * 0.7 + 0.3;
-        container.appendChild(star);
-      }
-    }
+<script>
+function handleSubmit() {
+  const door = document.getElementById("door")
+  const stars = document.getElementById("stars")
+  const success = document.getElementById("successText")
 
-    // Door animation when form is filled
-    function animateDoor() {
-      const door = document.getElementById('door');
-      door.style.backgroundImage = 'linear-gradient(to bottom, #f59e0b, #fbbf24, #fefce8)';
-      door.style.boxShadow = '0 0 80px 30px rgba(245, 158, 11, 0.8)';
-      door.style.transform = 'scale(1.08)';
-    }
+  // START ANIMATION
+  door.classList.add("active")
+  stars.classList.add("fast")
 
-    function submitForm(e) {
-      e.preventDefault();
-      
-      const email = document.getElementById('email').value;
-      if (!email) return;
+  setTimeout(() => {
+    door.classList.remove("active")
+    door.classList.add("success")
+    success.style.display = "block"
+  }, 1500)
+}
+</script>
 
-      // Step 4: Form filled
-      document.getElementById('join-btn').innerHTML = `
-        <span class="animate-pulse">JOINING...</span>
-      `;
-      document.getElementById('join-btn').disabled = true;
-
-      // Step 5: Button clicked + Door intensifies
-      setTimeout(() => {
-        animateDoor();
-      }, 800);
-
-      // Step 6: Success
-      setTimeout(() => {
-        document.getElementById('form-section').classList.add('hidden');
-        document.getElementById('success-section').classList.remove('hidden');
-      }, 2200);
-    }
-
-    function resetDemo() {
-      document.getElementById('form-section').classList.remove('hidden');
-      document.getElementById('success-section').classList.add('hidden');
-      
-      const door = document.getElementById('door');
-      door.style.backgroundImage = '';
-      door.style.boxShadow = '';
-      door.style.transform = '';
-      
-      document.getElementById('join-btn').innerHTML = `
-        JOIN WAITLIST <i class="fa-solid fa-arrow-right"></i>
-      `;
-      document.getElementById('join-btn').disabled = false;
-      
-      document.getElementById('email').value = '';
-    }
-
-    function closeModal() {
-      alert("Demo closed (this is a single file demo)");
-    }
-
-    // Initialize
-    window.onload = function() {
-      createShootingStars();
-      
-      // Auto animate door slightly on load
-      setTimeout(() => {
-        const door = document.getElementById('door');
-        door.style.boxShadow = '0 0 40px 15px rgba(249, 115, 22, 0.4)';
-      }, 1000);
-    };
-  </script>
 </body>
 </html>
