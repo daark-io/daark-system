@@ -1,192 +1,204 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DAARK • YOU VS YOU</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-  <style>
-    body {
-      font-family: system-ui, -apple-system, sans-serif;
-    }
-    .star-bg {
-      background: radial-gradient(circle, rgba(255,255,255,0.9) 0.8px, transparent 1px),
-                  radial-gradient(circle, rgba(255,255,255,0.6) 0.6px, transparent 1px);
-      background-size: 70px 70px, 110px 110px;
-      animation: starDrift 90s linear infinite;
-    }
-    @keyframes starDrift {
-      from { background-position: 0 0, 30px 30px; }
-      to { background-position: 200px 200px, 230px 230px; }
-    }
-    .door {
-      transition: all 1.4s cubic-bezier(0.23, 1, 0.32, 1);
-    }
-    .shooting-star {
-      position: absolute;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, #fff, transparent);
-      box-shadow: 0 0 12px #fff;
-      animation: shoot linear infinite;
-    }
-    @keyframes shoot {
-      0% { transform: translateX(-150%) translateY(0); opacity: 0; }
-      20% { opacity: 1; }
-      80% { opacity: 1; }
-      100% { transform: translateX(300%) translateY(40px); opacity: 0; }
-    }
-  </style>
-</head>
-<body class="bg-black text-white min-h-screen overflow-hidden relative">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DAARK — Animation Flow</title>
+    <style>
+        :root {
+            --black: #000000;
+            --text: #ffffff;
+            --muted: #8a8a8a;
+            --red: #ff2b1a;
+            --orange-glow: #ff4d00;
+            --cream: #ede4d0;
+        }
 
-  <!-- Dense Star Background -->
-  <div class="star-bg absolute inset-0 opacity-40"></div>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-  <!-- Shooting Stars -->
-  <div id="shootingContainer" class="absolute inset-0 pointer-events-none"></div>
+        body {
+            background: var(--black);
+            color: var(--text);
+            font-family: 'Arial', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1000px;
+        }
 
-  <div class="relative z-10 min-h-screen flex flex-col items-center justify-center p-6">
-    
-    <!-- Top Bar -->
-    <div class="absolute top-6 right-6 flex gap-3">
-      <button onclick="window.location.reload()" 
-              class="w-11 h-11 rounded-full bg-zinc-900/80 backdrop-blur flex items-center justify-center text-2xl hover:bg-zinc-800 transition">
-        ✕
-      </button>
-      <button class="w-11 h-11 rounded-full bg-zinc-900/80 backdrop-blur flex items-center justify-center text-2xl hover:bg-zinc-800 transition">
-        ↓
-      </button>
-    </div>
+        /* Hyperspace Stars Background */
+        .stars-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, #111 0%, #000 100%);
+            overflow: hidden;
+            z-index: -1;
+        }
 
-    <div class="max-w-md w-full text-center">
-      <!-- Logo -->
-      <h1 class="text-[4.8rem] font-black tracking-[-3px] mb-1 leading-none">
-        DA<span class="text-orange-500">A</span>RK
-      </h1>
-      <p class="text-2xl tracking-[6px] text-zinc-400 mb-10">YOU VS YOU</p>
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.3;
+        }
 
-      <!-- Tagline -->
-      <div class="mb-10">
-        <p class="text-3xl font-light leading-tight">The journey begins within.</p>
-        <p class="text-zinc-400 mt-4 text-lg">
-          Most people fail.<br>
-          Not because they lack effort.<br>
-          Because they lack structure.
-        </p>
-      </div>
+        .hyperspace .star {
+            animation: warp 0.8s infinite linear;
+        }
 
-      <!-- Door -->
-      <div class="flex justify-center mb-12">
-        <div class="relative w-60 h-96">
-          <div id="door" 
-               class="door absolute inset-0 bg-gradient-to-b from-orange-600 via-red-700 to-black rounded-3xl border-2 border-zinc-700 shadow-2xl overflow-hidden">
-            <!-- Inner door highlight -->
-            <div class="absolute inset-x-10 top-16 h-3 bg-white/30 rounded-full blur-sm"></div>
-          </div>
-        </div>
-      </div>
+        @keyframes warp {
+            0% { transform: translateZ(0) scale(1); opacity: 0.3; }
+            100% { transform: translateZ(500px) scale(2); opacity: 0; }
+        }
 
-      <!-- Form Section -->
-      <div id="formArea">
-        <form onsubmit="handleSubmit(event)" class="max-w-xs mx-auto space-y-4">
-          <div class="relative">
-            <i class="fa-solid fa-envelope absolute left-5 top-4.5 text-zinc-400"></i>
-            <input type="email" id="emailInput" value="you@example.com"
-                   class="w-full bg-zinc-900 border border-zinc-700 focus:border-orange-500 rounded-2xl px-12 py-4 text-white placeholder-zinc-500 outline-none">
-          </div>
-          <div class="relative">
-            <i class="fa-solid fa-phone absolute left-5 top-4.5 text-zinc-400"></i>
-            <input type="tel" id="phoneInput" value="+91 98765 43210"
-                   class="w-full bg-zinc-900 border border-zinc-700 focus:border-orange-500 rounded-2xl px-12 py-4 text-white placeholder-zinc-500 outline-none">
-          </div>
+        /* Main Content Container */
+        .container {
+            text-align: center;
+            max-width: 400px;
+            z-index: 10;
+            transition: opacity 0.5s ease;
+        }
 
-          <button id="submitBtn"
-                  type="submit"
-                  class="w-full bg-orange-600 hover:bg-orange-500 active:scale-95 transition-all py-4 rounded-2xl font-semibold text-lg flex items-center justify-center gap-2">
-            JOIN WAITLIST
-            <i class="fa-solid fa-arrow-right"></i>
-          </button>
-        </form>
-      </div>
-
-      <!-- Success Section -->
-      <div id="successArea" class="hidden">
-        <div class="text-7xl mb-6">🌟</div>
-        <h2 class="text-6xl font-bold tracking-tight mb-3">YOU'RE IN.</h2>
-        <p class="text-2xl text-zinc-300">The journey begins within.</p>
+        .logo { font-size: 48px; font-weight: 900; letter-spacing: 15px; margin-bottom: 5px; }
+        .logo span { color: var(--red); }
+        .sub-tag { font-size: 10px; letter-spacing: 4px; color: var(--red); margin-bottom: 30px; display: block; }
         
-        <button onclick="resetPage()" 
-                class="mt-10 px-10 py-4 border border-zinc-600 hover:border-white rounded-3xl text-lg flex items-center gap-3 mx-auto transition">
-          <i class="fa-solid fa-house"></i>
-          BACK TO HOME
-        </button>
-      </div>
+        .headline { font-size: 24px; margin-bottom: 15px; font-weight: 400; }
+        .description { font-size: 14px; color: var(--muted); line-height: 1.6; margin-bottom: 30px; }
+
+        /* Form Elements */
+        .form-group { display: flex; flex-direction: column; gap: 12px; margin-bottom: 40px; }
+        input {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 15px;
+            color: white;
+            outline: none;
+            transition: border 0.3s;
+        }
+        input:focus { border-color: var(--orange-glow); }
+
+        .btn {
+            background: var(--red);
+            color: white;
+            border: none;
+            padding: 15px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover { background: #d41f12; }
+
+        /* The Door Component */
+        .door-frame {
+            width: 120px;
+            height: 180px;
+            border: 2px solid var(--cream);
+            margin: 0 auto;
+            position: relative;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 0px var(--orange-glow);
+        }
+
+        /* States from image_0009f0.jpg */
+        .state-transition .door-frame {
+            border-color: var(--orange-glow);
+            box-shadow: 0 0 20px var(--orange-glow);
+            background: rgba(255, 77, 0, 0.1);
+        }
+
+        .state-loading .door-frame {
+            box-shadow: 0 0 50px var(--orange-glow);
+            background: var(--orange-glow);
+        }
+
+        .state-success .door-frame {
+            background: var(--cream);
+            box-shadow: 0 0 80px var(--cream);
+            border-color: var(--cream);
+            transform: scale(1.1);
+        }
+
+        .hidden { display: none; }
+        .success-msg { font-size: 32px; font-weight: 800; margin-top: 20px; }
+
+    </style>
+</head>
+<body id="body">
+
+    <div class="stars-container" id="stars"></div>
+
+    <div class="container" id="main-ui">
+        <div class="logo">DAA<span>R</span>K</div>
+        <small class="sub-tag">YOU VS YOU</small>
+        
+        <div id="form-content">
+            <p class="sub-tag">COMING SOON</p>
+            <h1 class="headline">The journey begins within.</h1>
+            <p class="description">Most people fail. Not because they lack effort. Because they lack structure.</p>
+            
+            <div class="form-group">
+                <input type="email" placeholder="Enter your email" id="email">
+                <input type="tel" placeholder="Enter your phone number">
+                <button class="btn" onclick="startSequence()">JOIN WAITLIST</button>
+            </div>
+        </div>
+
+        <div id="success-content" class="hidden">
+            <h1 class="success-msg">YOU'RE IN.</h1>
+            <p class="description">The journey begins within.</p>
+            <button class="btn" style="background: transparent; border: 1px solid white;" onclick="location.reload()">BACK TO HOME</button>
+        </div>
+
+        <!-- The Door -->
+        <div class="door-frame" id="door"></div>
     </div>
-  </div>
 
-  <script>
-    // Create multiple shooting stars
-    function createShootingStars() {
-      const container = document.getElementById('shootingContainer');
-      for (let i = 0; i < 12; i++) {
-        const star = document.createElement('div');
-        star.className = 'shooting-star';
-        star.style.top = (Math.random() * 85 + 5) + '%';
-        star.style.width = (80 + Math.random() * 100) + 'px';
-        star.style.animationDuration = (2.5 + Math.random() * 3) + 's';
-        star.style.animationDelay = '-' + (Math.random() * 6) + 's';
-        star.style.opacity = Math.random() * 0.6 + 0.4;
-        container.appendChild(star);
-      }
-    }
+    <script>
+        // Create random stars
+        const starsContainer = document.getElementById('stars');
+        for (let i = 0; i < 100; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.width = Math.random() * 3 + 'px';
+            star.style.height = star.style.width;
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            starsContainer.appendChild(star);
+        }
 
-    function handleSubmit(e) {
-      e.preventDefault();
-      
-      const btn = document.getElementById('submitBtn');
-      btn.innerHTML = 'JOINING...';
-      btn.disabled = true;
+        function startSequence() {
+            const body = document.getElementById('body');
+            const door = document.getElementById('door');
+            const form = document.getElementById('form-content');
+            const success = document.getElementById('success-content');
 
-      // Door starts glowing stronger (orange)
-      const door = document.getElementById('door');
-      door.style.boxShadow = '0 0 60px 25px #f59e0b';
-      door.style.transform = 'scale(1.05)';
+            // 1. Transition Start (Door turns orange)
+            body.classList.add('state-transition');
+            
+            // 2. Hyperspace Pullback
+            setTimeout(() => {
+                body.classList.add('hyperspace');
+            }, 500);
 
-      // After delay → success
-      setTimeout(() => {
-        door.style.backgroundImage = 'linear-gradient(to bottom, #fefce8, #fcd34d, #f59e0b)';
-        door.style.boxShadow = '0 0 100px 50px #fcd34d';
-        door.style.transform = 'scale(1.12)';
+            // 3. Button Clicked (Glow intensifies)
+            setTimeout(() => {
+                body.classList.remove('state-transition');
+                body.classList.add('state-loading');
+            }, 1500);
 
-        document.getElementById('formArea').classList.add('hidden');
-        document.getElementById('successArea').classList.remove('hidden');
-      }, 1800);
-    }
-
-    function resetPage() {
-      document.getElementById('formArea').classList.remove('hidden');
-      document.getElementById('successArea').classList.add('hidden');
-      
-      const door = document.getElementById('door');
-      door.style.backgroundImage = '';
-      door.style.boxShadow = '';
-      door.style.transform = '';
-      
-      const btn = document.getElementById('submitBtn');
-      btn.innerHTML = `JOIN WAITLIST <i class="fa-solid fa-arrow-right"></i>`;
-      btn.disabled = false;
-    }
-
-    // Initialize everything
-    window.onload = () => {
-      createShootingStars();
-      
-      // Initial subtle door glow
-      setTimeout(() => {
-        document.getElementById('door').style.boxShadow = '0 0 40px 15px rgba(249, 115, 22, 0.5)';
-      }, 800);
-    };
-  </script>
+            // 4. Success (Door transforms to light cream)
+            setTimeout(() => {
+                body.classList.remove('state-loading', 'hyperspace');
+                body.classList.add('state-success');
+                form.classList.add('hidden');
+                success.classList.remove('hidden');
+            }, 3000);
+        }
+    </script>
 </body>
 </html>
