@@ -20,7 +20,7 @@ canvas {
   left: 0;
 }
 
-/* CENTER UI */
+/* UI */
 .ui {
   position: absolute;
   top: 50%;
@@ -29,6 +29,12 @@ canvas {
   text-align: center;
 }
 
+h1 {
+  letter-spacing: 6px;
+  font-weight: 300;
+}
+
+/* inputs */
 input {
   display: block;
   width: 260px;
@@ -39,6 +45,13 @@ input {
   color: white;
 }
 
+input:focus {
+  outline: none;
+  border-color: #ff3b1f;
+  box-shadow: 0 0 12px rgba(255,60,30,0.3);
+}
+
+/* button */
 button {
   padding: 12px 20px;
   background: #ff3b1f;
@@ -47,11 +60,12 @@ button {
   cursor: pointer;
 }
 
-/* DOOR */
+/* door */
 .door {
   width: 90px;
   height: 170px;
   margin: 30px auto;
+  position: relative;
   background: linear-gradient(#ff4a2a,#ff2a1a);
   box-shadow:
     0 0 30px rgba(255,60,30,0.5),
@@ -66,7 +80,7 @@ button {
     0 0 160px rgba(255,243,214,0.6);
 }
 
-/* VIGNETTE */
+/* vignette */
 body::after {
   content: "";
   position: fixed;
@@ -75,7 +89,7 @@ body::after {
   pointer-events: none;
 }
 
-/* GRAIN */
+/* grain */
 body::before {
   content: "";
   position: fixed;
@@ -86,8 +100,7 @@ body::before {
 }
 </style>
 </head>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
 <body>
 
 <canvas id="bg"></canvas>
@@ -102,6 +115,116 @@ body::before {
 
   <div class="door" id="door"></div>
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+<script>
+// ===== THREE.JS SETUP =====
+const canvas = document.getElementById("bg")
+
+const scene = new THREE.Scene()
+const camera = new THREE.PerspectiveCamera(75, innerWidth/innerHeight, 0.1, 1000)
+const renderer = new THREE.WebGLRenderer({canvas, alpha:true})
+
+renderer.setSize(innerWidth, innerHeight)
+camera.position.z = 5
+
+scene.fog = new THREE.FogExp2(0x000000, 0.035)
+
+// ===== STARS =====
+const count = 900
+const positions = new Float32Array(count * 3)
+
+for (let i=0;i<count;i++) {
+  let x = (Math.random()-0.5)*100
+  let y = (Math.random()-0.5)*100
+
+  if (Math.sqrt(x*x+y*y)<8) continue
+
+  positions[i*3] = x
+  positions[i*3+1] = y
+  positions[i*3+2] = -Math.random()*100
+}
+
+const geo = new THREE.BufferGeometry()
+geo.setAttribute('position', new THREE.BufferAttribute(positions,3))
+
+const mat = new THREE.PointsMaterial({
+  color: 0x9fb3ff,
+  size: 0.06,
+  transparent: true,
+  opacity: 0.7,
+  blending: THREE.AdditiveBlending,
+  depthWrite:false
+})
+
+const stars = new THREE.Points(geo, mat)
+scene.add(stars)
+
+let speed = 0.03
+
+function animate() {
+  requestAnimationFrame(animate)
+
+  const pos = geo.attributes.position.array
+
+  for (let i=0;i<pos.length;i+=3) {
+    const dx = -pos[i]
+    const dy = -pos[i+1]
+
+    pos[i] += dx * speed * 0.02
+    pos[i+1] += dy * speed * 0.02
+    pos[i+2] += speed
+
+    if(pos[i+2]>2){
+      pos[i] = (Math.random()-0.5)*100
+      pos[i+1] = (Math.random()-0.5)*100
+      pos[i+2] = -100
+    }
+  }
+
+  geo.attributes.position.needsUpdate = true
+  renderer.render(scene,camera)
+}
+
+animate()
+
+// ===== INTERACTION =====
+const btn = document.getElementById("btn")
+const door = document.getElementById("door")
+
+btn.addEventListener("click", async () => {
+
+  const email = document.getElementById("email").value
+  const phone = document.getElementById("phone").value
+
+  if(!email || !phone){
+    alert("Fill all fields")
+    return
+  }
+
+  gsap.to({v:speed},{
+    v:0.6,
+    duration:1.2,
+    ease:"power3.out",
+    onUpdate:function(){
+      speed = this.targets()[0].v
+    }
+  })
+
+  setTimeout(()=>{
+    door.classList.add("success")
+  },500)
+
+  // backend (replace URL)
+  await fetch("YOUR_N8N_WEBHOOK_URL", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({email,phone})
+  })
+})
+</script>
 
 </body>
 </html>
