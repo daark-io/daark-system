@@ -1,739 +1,149 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-<title>DAARK — You vs You.</title>
-<meta name="description" content="No noise. No shortcuts. A discipline system." />
-<meta property="og:title" content="DAARK — You vs You." />
-<meta property="og:description" content="No noise. No shortcuts." />
-<meta name="theme-color" content="#000000" />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  
-  :root {
-    --black: #000000;
-    --text: #ffffff;
-    --muted: #8a8a8a;
-    --muted-2: #b8b8b8;
-    --red: #ff2b1a;
-    --red-deep: #c41e0e;
-    --cream: #ede4d0;
-    --cream-hover: #ffffff;
-    --line-2: rgba(255,255,255,0.22);
-  }
-  
-  html, body {
-    background: var(--black);
-    color: var(--text);
-    font-family: 'Inter', sans-serif;
-    overflow-x: hidden;
-    -webkit-font-smoothing: antialiased;
-  }
-  
-  body { min-height: 100vh; position: relative; }
-  
-  /* === BACKGROUND === */
-  .bg-art {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100vh;
-    z-index: 0;
-    pointer-events: none;
-  }
-  .bg-art svg { width: 100%; height: 100%; display: block; }
-  
-  body::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: 
-      repeating-linear-gradient(0deg, transparent 0, transparent 2px, rgba(255,255,255,0.012) 2px, rgba(255,255,255,0.012) 3px);
-    pointer-events: none;
-    z-index: 2;
-    mix-blend-mode: overlay;
-    opacity: 0.4;
-  }
-  
-  .bg-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 1;
-    background: linear-gradient(180deg, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.2) 35%, rgba(0,0,0,0.6) 100%);
-    pointer-events: none;
-  }
-  
-  /* === Top bar === */
-  .topbar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    padding: 32px 48px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    z-index: 50;
-    pointer-events: none;
-  }
-  .topbar > * { pointer-events: auto; }
-  
-  .brand {
-    font-size: 22px;
-    font-weight: 800;
-    letter-spacing: 1.5px;
-    color: var(--text);
-    text-shadow: 0 2px 12px rgba(0,0,0,0.8);
-  }
-  .brand sup {
-    font-size: 10px;
-    font-weight: 400;
-    color: var(--red);
-    margin-left: 1px;
-    top: -8px;
-  }
-  
-  .tagline {
-    font-size: 14px;
-    color: var(--text);
-    font-weight: 500;
-    letter-spacing: 0.3px;
-    text-shadow: 0 2px 12px rgba(0,0,0,0.85);
-  }
-  
-  /* === Stage === */
-  .stage {
-    position: relative;
-    min-height: 100vh;
-    width: 100%;
-    z-index: 5;
-    display: flex;
-    align-items: center;
-  }
-  
-  .container {
-    width: 100%;
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 120px 48px 80px;
-  }
-  
-  .content { max-width: 700px; }
-  
-  /* === Hero === */
-  .hero-title {
-    font-size: clamp(56px, 9vw, 130px);
-    font-weight: 900;
-    line-height: 0.92;
-    letter-spacing: -0.045em;
-    margin-bottom: 40px;
-    color: var(--text);
-    text-shadow: 0 4px 30px rgba(0,0,0,0.8);
-  }
-  .hero-title .red { color: var(--red); }
-  
-  .hero-sub {
-    font-size: 19px;
-    line-height: 1.5;
-    font-weight: 400;
-    color: var(--text);
-    margin-bottom: 48px;
-    max-width: 480px;
-    text-shadow: 0 2px 16px rgba(0,0,0,0.9);
-  }
-  
-  /* === Form === */
-  .form-row {
-    display: flex;
-    gap: 10px;
-    max-width: 640px;
-    margin-bottom: 48px;
-    flex-wrap: wrap;
-  }
-  
-  .input-field {
-    flex: 1;
-    min-width: 200px;
-    background: rgba(0,0,0,0.6);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid var(--line-2);
-    color: var(--text);
-    padding: 18px 22px;
-    font-size: 15px;
-    font-weight: 400;
-    transition: border-color 0.2s ease, background 0.2s ease;
-    outline: none;
-    border-radius: 0;
-  }
-  .input-field::placeholder { color: rgba(255,255,255,0.55); }
-  .input-field:focus {
-    border-color: var(--cream);
-    background: rgba(0,0,0,0.75);
-  }
-  
-  .submit-btn {
-    background: var(--cream);
-    color: var(--black);
-    border: 1px solid var(--cream);
-    padding: 18px 32px;
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    white-space: nowrap;
-    border-radius: 0;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
-  }
-  .submit-btn:hover:not(:disabled) {
-    background: var(--cream-hover);
-    transform: translateY(-1px);
-  }
-  .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-  
-  /* === Countdown === */
-  .countdown {
-    display: flex;
-    align-items: flex-start;
-    gap: 28px;
-    margin-bottom: 56px;
-  }
-  .cd-block { display: flex; flex-direction: column; align-items: flex-start; }
-  
-  .cd-num {
-    font-size: 48px;
-    font-weight: 800;
-    line-height: 1;
-    color: var(--text);
-    letter-spacing: -0.02em;
-    margin-bottom: 8px;
-    text-shadow: 0 2px 20px rgba(0,0,0,0.85);
-  }
-  .cd-unit {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 2.5px;
-    color: var(--muted-2);
-    text-transform: uppercase;
-    text-shadow: 0 1px 10px rgba(0,0,0,0.9);
-  }
-  .cd-divider {
-    width: 1px;
-    height: 56px;
-    background: var(--line-2);
-  }
-  
-  /* === Joined === */
-  .joined-row { display: flex; align-items: center; gap: 16px; }
-  .avatar-stack { display: flex; align-items: center; }
-  
-  .avatar {
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    border: 2px solid rgba(0,0,0,0.6);
-    margin-left: -10px;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.6);
-  }
-  .avatar:first-child { margin-left: 0; }
-  
-  .avatar::after {
-    content: '';
-    position: absolute;
-    top: 8px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 11px;
-    height: 11px;
-    background: rgba(255,255,255,0.32);
-    border-radius: 50%;
-  }
-  .avatar::before {
-    content: '';
-    position: absolute;
-    bottom: -5px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 20px;
-    height: 16px;
-    background: rgba(255,255,255,0.32);
-    border-radius: 50% 50% 0 0;
-  }
-  .avatar:nth-child(1) { background: linear-gradient(135deg, #3a3a3a, #5a5a5a); }
-  .avatar:nth-child(2) { background: linear-gradient(135deg, #2a2a2a, #4a4a4a); }
-  .avatar:nth-child(3) { background: linear-gradient(135deg, #404040, #606060); }
-  
-  .joined-text {
-    font-size: 14px;
-    color: var(--muted-2);
-    font-weight: 400;
-    text-shadow: 0 1px 10px rgba(0,0,0,0.9);
-  }
-  .joined-text strong { color: var(--text); font-weight: 700; }
-  
-  /* === Error === */
-  .error {
-    display: none;
-    color: var(--red);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    letter-spacing: 0.5px;
-    margin-top: -36px;
-    margin-bottom: 24px;
-    text-shadow: 0 1px 10px rgba(0,0,0,0.9);
-  }
-  .error.show { display: block; }
-  
-  /* === Success === */
-  .success-state {
-    display: none;
-    opacity: 0;
-    transition: opacity 0.6s ease;
-  }
-  .success-state.show { display: block; opacity: 1; }
-  
-  .form-state { transition: opacity 0.4s ease, transform 0.4s ease; }
-  .form-state.hide { opacity: 0; transform: translateY(-12px); pointer-events: none; }
-  
-  .success-eyebrow {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    letter-spacing: 3px;
-    color: var(--red);
-    text-transform: uppercase;
-    margin-bottom: 24px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    text-shadow: 0 1px 10px rgba(0,0,0,0.9);
-  }
-  .success-eyebrow .dot {
-    width: 8px;
-    height: 8px;
-    background: var(--red);
-    border-radius: 50%;
-    animation: pulse 1.5s ease-in-out infinite;
-  }
-  @keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(0.85); }
-  }
-  
-  .success-id-card {
-    border: 1px solid var(--line-2);
-    padding: 32px 36px;
-    margin-top: 32px;
-    max-width: 460px;
-    background: rgba(0,0,0,0.65);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-  }
-  .success-id-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 3px;
-    color: var(--muted-2);
-    text-transform: uppercase;
-    margin-bottom: 14px;
-  }
-  .success-id {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: clamp(28px, 4vw, 36px);
-    font-weight: 500;
-    letter-spacing: 4px;
-    color: var(--text);
-    word-break: break-all;
-  }
-  .success-msg {
-    margin-top: 24px;
-    font-size: 15px;
-    line-height: 1.6;
-    color: var(--muted-2);
-    max-width: 460px;
-    text-shadow: 0 1px 10px rgba(0,0,0,0.9);
-  }
-  
-  /* Animations */
-  .silhouette-left { animation: subtleSway 8s ease-in-out infinite; transform-origin: bottom center; }
-  .silhouette-right { animation: subtleSway 8s ease-in-out infinite reverse; transform-origin: bottom center; }
-  @keyframes subtleSway {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-3px); }
-  }
-  
-  .fire-flicker { animation: flicker 5s ease-in-out infinite; }
-  @keyframes flicker {
-    0%, 100% { opacity: 0.9; }
-    33% { opacity: 1; }
-    66% { opacity: 0.75; }
-  }
-  
-  /* Mobile */
-  @media (max-width: 900px) {
-    .topbar { padding: 20px 24px; }
-    .tagline { font-size: 12px; }
-    .container { padding: 100px 24px 60px; }
-    .hero-title { font-size: clamp(48px, 14vw, 80px); margin-bottom: 32px; }
-    .hero-sub { font-size: 16px; margin-bottom: 36px; }
-    .form-row { flex-direction: column; gap: 12px; }
-    .input-field { width: 100%; min-width: 0; }
-    .submit-btn { width: 100%; }
-    .countdown { gap: 16px; flex-wrap: wrap; }
-    .cd-num { font-size: 38px; }
-    .cd-divider { display: none; }
-  }
-  @media (max-width: 480px) {
-    .countdown { gap: 14px; }
-    .cd-num { font-size: 32px; }
-    .cd-unit { font-size: 9px; letter-spacing: 1.5px; }
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DAARK</title>
+
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: black;
+    }
+
+    #canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+    }
+
+    .center-ui {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      text-align: center;
+      font-family: sans-serif;
+    }
+
+    .door {
+      width: 80px;
+      height: 160px;
+      margin: 20px auto;
+      background: #FF3B1F;
+      box-shadow: 0 0 40px rgba(255, 59, 31, 0.6);
+      transition: all 1.2s ease;
+    }
+
+    .door.success {
+      background: #FFF3D6;
+      box-shadow: 0 0 80px rgba(255, 243, 214, 0.8);
+    }
+
+    button {
+      padding: 10px 20px;
+      background: #FF3B1F;
+      border: none;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
 
-<!-- BACKGROUND -->
-<div class="bg-art">
-  <svg viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <!-- LEFT: dusty cream / aged paper — cooler, less yellow -->
-      <linearGradient id="leftBg" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#d6cdb8" />
-        <stop offset="50%" stop-color="#b3a78e" />
-        <stop offset="100%" stop-color="#5a513e" />
-      </linearGradient>
-      
-      <!-- RIGHT: deep red-black with fire — heavier red, bolder fire -->
-      <linearGradient id="rightBg" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#1a0604" />
-        <stop offset="50%" stop-color="#280805" />
-        <stop offset="100%" stop-color="#080302" />
-      </linearGradient>
-      
-      <!-- BIGGER, DEEPER fire glow -->
-      <radialGradient id="fireGlow" cx="30%" cy="55%" r="75%">
-        <stop offset="0%" stop-color="#ff4520" stop-opacity="1" />
-        <stop offset="25%" stop-color="#e02818" stop-opacity="0.85" />
-        <stop offset="55%" stop-color="#8a1208" stop-opacity="0.5" />
-        <stop offset="85%" stop-color="#2a0604" stop-opacity="0.15" />
-        <stop offset="100%" stop-color="#000" stop-opacity="0" />
-      </radialGradient>
-      
-      <!-- Inner hot core of the fire -->
-      <radialGradient id="fireCore" cx="32%" cy="58%" r="35%">
-        <stop offset="0%" stop-color="#ffaa55" stop-opacity="0.7" />
-        <stop offset="40%" stop-color="#ff5520" stop-opacity="0.4" />
-        <stop offset="100%" stop-color="#000" stop-opacity="0" />
-      </radialGradient>
-      
-      <!-- Water reflections -->
-      <linearGradient id="waterLeft" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" stop-color="#a89878" stop-opacity="0.45" />
-        <stop offset="100%" stop-color="#2a2418" stop-opacity="0.95" />
-      </linearGradient>
-      
-      <linearGradient id="waterRight" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" stop-color="#c41e0e" stop-opacity="0.5" />
-        <stop offset="50%" stop-color="#5a0a04" stop-opacity="0.7" />
-        <stop offset="100%" stop-color="#000" stop-opacity="1" />
-      </linearGradient>
-      
-      <!-- Texture: subtle paper grain on left -->
-      <pattern id="grainLeft" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
-        <rect width="100" height="100" fill="transparent"/>
-        <circle cx="20" cy="20" r="0.5" fill="#3a3020" opacity="0.18"/>
-        <circle cx="60" cy="40" r="0.4" fill="#2a2418" opacity="0.14"/>
-        <circle cx="80" cy="80" r="0.3" fill="#3a3020" opacity="0.16"/>
-        <circle cx="40" cy="70" r="0.5" fill="#2a2418" opacity="0.12"/>
-      </pattern>
-      
-      <!-- Wall cracks -->
-      <pattern id="cracks" x="0" y="0" width="400" height="600" patternUnits="userSpaceOnUse">
-        <path d="M 80 0 L 90 100 L 70 200 L 100 350 L 80 500 L 110 600" stroke="#2a2418" stroke-width="0.6" opacity="0.3" fill="none"/>
-        <path d="M 280 0 L 290 150 L 270 280 L 300 450 L 280 600" stroke="#2a2418" stroke-width="0.5" opacity="0.25" fill="none"/>
-        <path d="M 180 60 L 200 200 L 175 380 L 210 580" stroke="#2a2418" stroke-width="0.4" opacity="0.2" fill="none"/>
-      </pattern>
-      
-      <radialGradient id="leftVignette" cx="30%" cy="40%" r="80%">
-        <stop offset="0%" stop-color="transparent" />
-        <stop offset="100%" stop-color="#1f1a10" stop-opacity="0.55" />
-      </radialGradient>
-      
-      <filter id="paperBlur"><feGaussianBlur stdDeviation="0.6"/></filter>
-      <filter id="fireBlur"><feGaussianBlur stdDeviation="3"/></filter>
-      <filter id="fireBlurHeavy"><feGaussianBlur stdDeviation="8"/></filter>
-    </defs>
-    
-    <!-- LEFT HALF -->
-    <rect x="0" y="0" width="960" height="1080" fill="url(#leftBg)" />
-    <rect x="0" y="0" width="960" height="1080" fill="url(#grainLeft)" />
-    <rect x="0" y="0" width="960" height="1080" fill="url(#cracks)" />
-    <rect x="0" y="0" width="960" height="1080" fill="url(#leftVignette)" />
-    
-    <!-- RIGHT HALF -->
-    <rect x="960" y="0" width="960" height="1080" fill="url(#rightBg)" />
-    
-    <!-- Outer big fire glow -->
-    <ellipse class="fire-flicker" cx="1240" cy="640" rx="950" ry="550" fill="url(#fireGlow)" filter="url(#fireBlurHeavy)"/>
-    
-    <!-- Inner bright fire core -->
-    <ellipse class="fire-flicker" cx="1280" cy="660" rx="450" ry="280" fill="url(#fireCore)" filter="url(#fireBlur)"/>
-    
-    <!-- Vertical divide -->
-    <line x1="960" y1="0" x2="960" y2="1080" stroke="#0a0402" stroke-width="3" opacity="0.7"/>
-    <line x1="960" y1="0" x2="960" y2="1080" stroke="#000" stroke-width="1" opacity="0.5"/>
-    
-    <!-- Horizon -->
-    <line x1="0" y1="780" x2="1920" y2="780" stroke="#0a0402" stroke-width="0.5" opacity="0.3"/>
-    
-    <!-- Water -->
-    <rect x="0" y="780" width="960" height="300" fill="url(#waterLeft)" />
-    <line x1="100" y1="850" x2="380" y2="850" stroke="#806e50" stroke-width="0.5" opacity="0.4"/>
-    <line x1="500" y1="900" x2="800" y2="900" stroke="#806e50" stroke-width="0.5" opacity="0.35"/>
-    <line x1="50" y1="950" x2="450" y2="950" stroke="#806e50" stroke-width="0.5" opacity="0.3"/>
-    
-    <rect x="960" y="780" width="960" height="300" fill="url(#waterRight)" />
-    <line x1="1100" y1="850" x2="1380" y2="850" stroke="#ff4520" stroke-width="0.6" opacity="0.4"/>
-    <line x1="1500" y1="900" x2="1800" y2="900" stroke="#c41e0e" stroke-width="0.5" opacity="0.35"/>
-    <line x1="1050" y1="950" x2="1450" y2="950" stroke="#c41e0e" stroke-width="0.5" opacity="0.28"/>
-    
-    <!-- LEFT silhouette (facing right) -->
-    <g class="silhouette-left">
-      <ellipse cx="855" cy="395" rx="22" ry="28" fill="#0a0604" opacity="0.95"/>
-      <path d="M 840 420 Q 840 470 836 510 Q 832 550 836 610 L 838 660 L 840 720 L 842 780 L 870 780 L 868 720 L 866 660 L 868 610 Q 870 575 874 545 Q 878 520 880 490 Q 882 460 878 435 Q 875 422 870 418 Q 858 414 845 416 Z" fill="#0a0604" opacity="0.95"/>
-      <path d="M 858 780 L 860 850 L 856 920 L 862 990 L 858 1080" stroke="#0a0604" stroke-width="20" stroke-linecap="round" opacity="0.3" fill="none" filter="url(#paperBlur)"/>
-    </g>
-    
-    <!-- RIGHT silhouette (facing left) -->
-    <g class="silhouette-right">
-      <ellipse cx="1065" cy="395" rx="22" ry="28" fill="#000" opacity="1"/>
-      <path d="M 1080 420 Q 1080 470 1084 510 Q 1088 550 1084 610 L 1082 660 L 1080 720 L 1078 780 L 1050 780 L 1052 720 L 1054 660 L 1052 610 Q 1050 575 1046 545 Q 1042 520 1040 490 Q 1038 460 1042 435 Q 1045 422 1050 418 Q 1062 414 1075 416 Z" fill="#000" opacity="1"/>
-      <path d="M 1062 780 L 1060 850 L 1064 920 L 1058 990 L 1062 1080" stroke="#000" stroke-width="20" stroke-linecap="round" opacity="0.4" fill="none" filter="url(#paperBlur)"/>
-    </g>
-  </svg>
+<canvas id="canvas"></canvas>
+
+<div class="center-ui">
+  <h1>DAARK</h1>
+  <div class="door" id="door"></div>
+  <button id="btn">ENTER</button>
 </div>
 
-<div class="bg-overlay"></div>
-
-<!-- TOP BAR -->
-<div class="topbar">
-  <div class="brand">DAARK<sup>®</sup></div>
-  <div class="tagline">No noise. No shortcuts.</div>
-</div>
-
-<!-- STAGE -->
-<div class="stage">
-  <div class="container">
-    <div class="content">
-      
-      <!-- FORM STATE -->
-      <div class="form-state" id="formState">
-        <h1 class="hero-title">
-          <span class="red">YOU</span> <span class="red">VS</span> <span>YOU</span>
-        </h1>
-        
-        <div class="hero-sub">
-          Most people fail.<br/>
-          Not because they lack effort.<br/>
-          Because they lack structure.
-        </div>
-        
-        <form id="waitlistForm" autocomplete="off" novalidate>
-          <div class="form-row">
-            <input class="input-field" type="email" id="email" placeholder="Email address" required />
-            <input class="input-field" type="tel" id="phone" placeholder="Phone number" required />
-            <button type="submit" class="submit-btn" id="submitBtn">Join Waitlist</button>
-          </div>
-          <div class="error" id="errorMsg"></div>
-        </form>
-        
-        <div class="countdown">
-          <div class="cd-block"><div class="cd-num" id="cdDays">21</div><div class="cd-unit">Days</div></div>
-          <div class="cd-divider"></div>
-          <div class="cd-block"><div class="cd-num" id="cdHrs">00</div><div class="cd-unit">Hours</div></div>
-          <div class="cd-divider"></div>
-          <div class="cd-block"><div class="cd-num" id="cdMin">00</div><div class="cd-unit">Minutes</div></div>
-          <div class="cd-divider"></div>
-          <div class="cd-block"><div class="cd-num" id="cdSec">00</div><div class="cd-unit">Seconds</div></div>
-        </div>
-        
-        <div class="joined-row">
-          <div class="avatar-stack">
-            <div class="avatar"></div>
-            <div class="avatar"></div>
-            <div class="avatar"></div>
-          </div>
-          <div class="joined-text">Already <strong id="joinedCount">—</strong> joined</div>
-        </div>
-      </div>
-      
-      <!-- SUCCESS STATE -->
-      <div class="success-state" id="successState">
-        <div class="success-eyebrow"><span class="dot"></span> Registration Confirmed</div>
-        <h1 class="hero-title"><span class="red">YOU'RE</span> <span>IN.</span></h1>
-        <div class="hero-sub">
-          Your seat is secured.<br/>
-          The protocol begins on launch day.
-        </div>
-        <div class="success-id-card">
-          <div class="success-id-label">Your Registration ID</div>
-          <div class="success-id" id="successId">V01/IN/0001</div>
-        </div>
-        <div class="success-msg">
-          Check your email. Your ID has been sent.<br/>
-          Keep it. You'll need it.
-        </div>
-      </div>
-      
-    </div>
-  </div>
-</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 
 <script>
-  const N8N_WEBHOOK = 'https://daark-live.app.n8n.cloud/webhook/0ebd60fd-3fc0-4d30-a4a6-dc76d7cee866';
-  const SUPABASE_URL = 'https://imuoxelvoaypwzoytaol.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImltdW94ZWx2b2F5cHd6b3l0YW9sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MjE1NTYsImV4cCI6MjA5MTk5NzU1Nn0.8wAMkQggrYUTwwdHariVKbX_Q-V2ov9C7_y0j5TesUg';
-  const COUNTDOWN_TARGET = new Date(Date.now() + 21 * 24 * 60 * 60 * 1000);
-  
-  let detectedPrefix = '+91';
-  
-  async function detectCountry() {
-    try {
-      const res = await fetch('https://ipapi.co/json/');
-      if (!res.ok) throw new Error('fail');
-      const data = await res.json();
-      const cc = data.country_calling_code || '+91';
-      detectedPrefix = cc.startsWith('+') ? cc : '+' + cc;
-    } catch (e) {
-      detectedPrefix = '+91';
+const canvas = document.getElementById('canvas')
+
+const scene = new THREE.Scene()
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000)
+const renderer = new THREE.WebGLRenderer({ canvas, alpha: true })
+
+renderer.setSize(window.innerWidth, window.innerHeight)
+
+camera.position.z = 5
+
+// STARFIELD
+const count = 900
+const positions = new Float32Array(count * 3)
+
+for (let i = 0; i < count; i++) {
+  let x = (Math.random() - 0.5) * 50
+  let y = (Math.random() - 0.5) * 50
+
+  // center clean
+  if (Math.sqrt(x*x + y*y) < 5) {
+    x += 10
+    y += 10
+  }
+
+  positions[i * 3] = x
+  positions[i * 3 + 1] = y
+  positions[i * 3 + 2] = -Math.random() * 50
+}
+
+const geometry = new THREE.BufferGeometry()
+geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+
+const material = new THREE.PointsMaterial({
+  color: 0xffffff,
+  size: 0.05,
+  opacity: 0.7,
+  transparent: true
+})
+
+const stars = new THREE.Points(geometry, material)
+scene.add(stars)
+
+let speed = 0.02
+
+function animate() {
+  requestAnimationFrame(animate)
+
+  const pos = geometry.attributes.position.array
+
+  for (let i = 0; i < pos.length; i += 3) {
+    pos[i + 2] += speed
+
+    if (pos[i + 2] > 1) {
+      pos[i + 2] = -50
     }
   }
-  detectCountry();
-  
-  function updateCountdown() {
-    const diff = COUNTDOWN_TARGET - new Date();
-    if (diff <= 0) {
-      ['cdDays','cdHrs','cdMin','cdSec'].forEach(id => document.getElementById(id).textContent = '00');
-      return;
+
+  geometry.attributes.position.needsUpdate = true
+  renderer.render(scene, camera)
+}
+
+animate()
+
+// INTERACTION
+const btn = document.getElementById("btn")
+const door = document.getElementById("door")
+
+btn.addEventListener("click", () => {
+
+  gsap.to({ val: speed }, {
+    val: 0.6,
+    duration: 1,
+    onUpdate: function() {
+      speed = this.targets()[0].val
     }
-    const days = Math.floor(diff / 86400000);
-    const hrs = Math.floor((diff % 86400000) / 3600000);
-    const min = Math.floor((diff % 3600000) / 60000);
-    const sec = Math.floor((diff % 60000) / 1000);
-    document.getElementById('cdDays').textContent = String(days).padStart(2,'0');
-    document.getElementById('cdHrs').textContent = String(hrs).padStart(2,'0');
-    document.getElementById('cdMin').textContent = String(min).padStart(2,'0');
-    document.getElementById('cdSec').textContent = String(sec).padStart(2,'0');
-  }
-  updateCountdown();
-  setInterval(updateCountdown, 1000);
-  
-  async function loadJoinedCount() {
-    try {
-      const res = await fetch(SUPABASE_URL + '/rest/v1/registration?select=id', {
-        method: 'GET',
-        headers: {
-          'apikey': SUPABASE_ANON_KEY,
-          'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-          'Prefer': 'count=exact',
-          'Range': '0-0'
-        }
-      });
-      const contentRange = res.headers.get('content-range');
-      let count = 0;
-      if (contentRange) count = parseInt(contentRange.split('/')[1]) || 0;
-      animateCount(0, count, 1500);
-    } catch (e) {
-      document.getElementById('joinedCount').textContent = '—';
-    }
-  }
-  
-  function animateCount(from, to, duration) {
-    const el = document.getElementById('joinedCount');
-    const startTime = performance.now();
-    function step(now) {
-      const progress = Math.min((now - startTime) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      const current = Math.floor(from + (to - from) * eased);
-      el.textContent = current.toLocaleString();
-      if (progress < 1) requestAnimationFrame(step);
-    }
-    requestAnimationFrame(step);
-  }
-  loadJoinedCount();
-  
-  document.getElementById('waitlistForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const email = document.getElementById('email').value.trim();
-    let phoneRaw = document.getElementById('phone').value.trim().replace(/\s+/g, '');
-    const errorEl = document.getElementById('errorMsg');
-    const btn = document.getElementById('submitBtn');
-    errorEl.classList.remove('show');
-    
-    if (!email || !phoneRaw) {
-      errorEl.textContent = 'Both fields required.';
-      errorEl.classList.add('show');
-      return;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errorEl.textContent = 'Invalid email.';
-      errorEl.classList.add('show');
-      return;
-    }
-    
-    let fullPhone;
-    if (phoneRaw.startsWith('+')) {
-      fullPhone = phoneRaw;
-    } else {
-      phoneRaw = phoneRaw.replace(/^0+/, '');
-      fullPhone = detectedPrefix + phoneRaw;
-    }
-    
-    if (fullPhone.length < 8) {
-      errorEl.textContent = 'Invalid phone number.';
-      errorEl.classList.add('show');
-      return;
-    }
-    
-    btn.disabled = true;
-    btn.textContent = 'Registering...';
-    
-    try {
-      const res = await fetch(N8N_WEBHOOK, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email, phone: fullPhone })
-      });
-      const data = await res.json();
-      
-      if (data.status === 'success' && data.unique_id) {
-        document.getElementById('successId').textContent = data.unique_id;
-        document.getElementById('formState').classList.add('hide');
-        setTimeout(() => {
-          document.getElementById('formState').style.display = 'none';
-          document.getElementById('successState').classList.add('show');
-        }, 400);
-      } else {
-        throw new Error('fail');
-      }
-    } catch (err) {
-      errorEl.textContent = 'Something went wrong. Try again.';
-      errorEl.classList.add('show');
-      btn.disabled = false;
-      btn.textContent = 'Join Waitlist';
-    }
-  });
-  
-  document.getElementById('phone').addEventListener('input', function(e) {
-    e.target.value = e.target.value.replace(/[^\d+]/g, '');
-  });
+  })
+
+  door.classList.add("success")
+})
 </script>
 
 </body>
