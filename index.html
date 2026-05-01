@@ -2,932 +2,838 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>DAARK — You vs You</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>DAARK — You vs You.</title>
+<meta name="description" content="No noise. No shortcuts. A discipline system." />
+<meta property="og:title" content="DAARK — You vs You." />
+<meta property="og:description" content="No noise. No shortcuts." />
+<meta name="theme-color" content="#000000" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  
   :root {
-    --ink: #f4f1ea;
-    --ink-dim: rgba(244, 241, 234, 0.6);
-    --ink-faint: rgba(244, 241, 234, 0.3);
-    --ember: #ff4714;            /* hot iron — R:1.0 G:0.28 B:0.08 */
-    --ember-soft: #ff6a3a;
-    --ember-deep: #c43208;
+    --black: #000000;
+    --text: #ffffff;
+    --muted: #6e6e6e;
+    --muted-2: #a8a8a8;
+    --red: #ff2b1a;
+    --cream: #f1ead8;
+    --warm: #ffa340;
+    --warm-bright: #ffd9a8;
+    --line-2: rgba(255,255,255,0.22);
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; }
-  body {
+  
+  html, body {
+    background: var(--black);
+    color: var(--text);
     font-family: 'Inter', sans-serif;
-    background: #000;
-    color: var(--ink);
-    overflow: hidden;
+    overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
-    position: relative;
   }
-
-  #scene {
-    position: fixed; inset: 0;
-    z-index: 0; display: block;
-  }
-
-  /* whiteout used for the brief flash on success */
-  .whiteout {
-    position: fixed; inset: 0;
-    background: #fff;
-    z-index: 5;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 350ms cubic-bezier(0.7, 0, 0.84, 0);
-  }
-  body[data-stage="flash"] .whiteout { opacity: 1; transition-duration: 220ms; }
-
-  .ui {
-    position: relative;
-    z-index: 2;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 56px 24px 36px;
-    transition: opacity 600ms ease, transform 800ms cubic-bezier(0.65, 0, 0.35, 1);
-  }
-  body[data-stage="processing"] .ui { transform: translateY(-6px); }
-  body[data-stage="flash"] .ui { opacity: 0; transform: translateY(-12px); pointer-events: none; }
-  body[data-stage="success"] .ui { opacity: 0; pointer-events: none; }
-
-  .wordmark {
-    font-family: 'Cormorant Garamond', serif;
-    font-weight: 300;
-    font-size: clamp(46px, 9vw, 78px);
-    letter-spacing: 0.32em;
-    text-indent: 0.32em;
-    line-height: 1;
-    user-select: none;
-  }
-  .wordmark .a-red   { color: var(--ember); }
-  .wordmark .a-white { color: var(--ink); }
-
-  .tagline {
-    margin-top: 14px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.5em;
-    text-indent: 0.5em;
-  }
-  .tagline .you-red   { color: var(--ember); }
-  .tagline .you-white { color: var(--ink); }
-  .tagline .vs        { color: var(--ink-dim); margin: 0 0.4em; }
-
-  .badge {
-    margin-top: 36px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10.5px;
-    letter-spacing: 0.5em;
-    color: var(--ember);
-    text-indent: 0.5em;
-  }
-  .headline {
-    margin-top: 12px;
-    font-family: 'Cormorant Garamond', serif;
-    font-weight: 400;
-    font-size: clamp(22px, 3.4vw, 28px);
-    letter-spacing: 0.02em;
-  }
-  .subcopy {
-    margin-top: 14px;
-    font-size: 13px;
-    line-height: 1.7;
-    color: var(--ink-dim);
-    text-align: center;
-    max-width: 340px;
-  }
-  .subcopy strong { color: var(--ink); font-weight: 500; }
-
-  .form {
-    margin-top: 26px;
-    width: 100%;
-    max-width: 340px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .field {
-    display: flex;
-    align-items: center;
-    border: 1px solid rgba(255, 71, 20, 0.4);
-    background: rgba(8, 4, 2, 0.55);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    transition: border-color 200ms ease, background 200ms ease;
-  }
-  .field:focus-within {
-    border-color: var(--ember);
-    background: rgba(20, 8, 2, 0.7);
-  }
-  .field svg { width: 13px; height: 13px; margin-left: 14px; color: var(--ember); flex-shrink: 0; }
-  .field input {
-    flex: 1; background: transparent; border: none; outline: none;
-    color: var(--ink);
-    font-family: 'Inter', sans-serif;
-    font-size: 13px;
-    padding: 13px 14px 13px 10px;
-    letter-spacing: 0.02em;
-  }
-  .field input::placeholder {
-    color: var(--ink-faint);
-    font-size: 12.5px;
-    letter-spacing: 0.04em;
-  }
-
-  .submit {
-    margin-top: 4px;
-    height: 44px;
-    border: none;
-    background: var(--ember);
-    color: #0a0500;
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 500;
-    font-size: 11.5px;
-    letter-spacing: 0.4em;
-    text-indent: 0.4em;
-    cursor: pointer;
-    transition: background 200ms ease, transform 100ms ease, box-shadow 400ms ease;
-  }
-  .submit:hover { background: var(--ember-soft); }
-  .submit:active { transform: scale(0.985); }
-  .submit:disabled { cursor: wait; background: var(--ember-deep); }
-  .submit.is-pressed {
-    box-shadow: 0 0 50px rgba(255, 71, 20, 0.65), 0 0 100px rgba(255, 71, 20, 0.35);
-  }
-  .form-error {
-    margin-top: 6px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.15em;
-    color: #ff5a3a;
-    min-height: 12px;
-    text-align: center;
-  }
-  .dots::after {
-    content: ''; display: inline-block; width: 1em; text-align: left;
-    animation: dots 1.2s steps(4, end) infinite;
-  }
-  @keyframes dots {
-    0% { content: ''; } 25% { content: '.'; } 50% { content: '..'; }
-    75% { content: '...'; } 100% { content: ''; }
-  }
-
-  /* live count */
-  .live-count {
-    margin-top: 18px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    opacity: 0;
-    transition: opacity 600ms ease;
-  }
-  .live-count.is-ready { opacity: 1; }
-  .live-count-num {
-    font-family: 'Cormorant Garamond', serif;
-    font-weight: 400;
-    font-size: 28px;
-    color: var(--ink);
-    letter-spacing: 0.04em;
-    line-height: 1;
-  }
-  .live-count-pulse {
-    display: inline-block;
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: var(--ember);
-    margin-right: 8px;
-    box-shadow: 0 0 10px var(--ember);
-    animation: pulse 1.8s ease-in-out infinite;
-    vertical-align: middle;
-  }
-  @keyframes pulse {
-    0%, 100% { opacity: 0.4; transform: scale(0.85); }
-    50%      { opacity: 1.0; transform: scale(1.15); }
-  }
-
-  .footer {
-    margin-top: auto;
-    padding-top: 60px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 14px;
-  }
-  .footer-cta {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.3em;
-    color: var(--ink-faint);
-  }
-  .socials { display: flex; gap: 22px; }
-  .socials a { color: var(--ink-dim); width: 16px; height: 16px; transition: color 200ms ease; }
-  .socials a:hover { color: var(--ember); }
-  .socials svg { width: 100%; height: 100%; }
-  .copyright {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.3em;
-    color: var(--ink-faint);
-  }
-
-  .door-window {
-    width: 100%;
-    height: clamp(220px, 36vh, 360px);
-    flex-shrink: 0;
-  }
-
-  /* ---------- SUCCESS UI (mirrors home layout, swaps content) ---------- */
-  .success-ui {
+  
+  body { min-height: 100vh; position: relative; }
+  
+  /* === STARFIELD BACKGROUND === */
+  .starfield {
     position: fixed;
     inset: 0;
-    z-index: 4;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 56px 24px 36px;
-    opacity: 0;
+    z-index: 0;
+    background: 
+      radial-gradient(ellipse at 75% 60%, rgba(40,20,8,0.4) 0%, transparent 50%),
+      radial-gradient(ellipse at center, #050505 0%, #000 70%);
+    overflow: hidden;
+  }
+  
+  .star {
+    position: absolute;
+    background: #fff;
+    border-radius: 50%;
+    animation: twinkle var(--dur, 4s) ease-in-out infinite;
+    animation-delay: var(--delay, 0s);
+  }
+  
+  @keyframes twinkle {
+    0%, 100% { opacity: var(--max-op, 0.8); }
+    50% { opacity: 0.15; }
+  }
+  
+  /* Hyperspace stars container */
+  .hyperspace {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    overflow: hidden;
     pointer-events: none;
-    transition: opacity 800ms ease 200ms;
-    text-align: center;
   }
-  body[data-stage="success"] .success-ui {
+  
+  .h-star {
+    position: absolute;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent);
+    transform-origin: center;
+    animation: hyperdrift var(--dur, 8s) linear infinite;
+    animation-delay: var(--delay, 0s);
+  }
+  
+  @keyframes hyperdrift {
+    0% { transform: translateX(-100px) translateY(0); opacity: 0; width: 40px; }
+    10% { opacity: 0.6; }
+    50% { opacity: 1; width: 80px; }
+    90% { opacity: 0.6; }
+    100% { transform: translateX(100vw) translateY(0); opacity: 0; width: 40px; }
+  }
+  
+  /* On submit: stars accelerate */
+  body.submitting .h-star {
+    animation-duration: 1.5s !important;
+  }
+  
+  /* === DOOR SCENE (right side) === */
+  .door-scene {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 55%;
+    height: 100vh;
+    z-index: 2;
+    pointer-events: none;
+  }
+  
+  .door-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  
+  /* Door states */
+  .door-light {
+    transition: all 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+    fill: url(#doorGlowDim);
+  }
+  
+  .door-frame-glow {
+    transition: all 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0.4;
+  }
+  
+  .ambient-glow {
+    transition: all 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0.3;
+  }
+  
+  .ground-light {
+    transition: all 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0.4;
+  }
+  
+  /* Submit state: door floods bright cream */
+  body.submit-active .door-light {
+    fill: url(#doorGlowBright);
+    transform: scale(1.05);
+    transform-origin: center;
+  }
+  
+  body.submit-active .door-frame-glow {
     opacity: 1;
-    pointer-events: auto;
   }
-  .success-wordmark {
-    font-family: 'Cormorant Garamond', serif;
-    font-weight: 300;
-    font-size: clamp(38px, 7.5vw, 64px);
-    letter-spacing: 0.18em;
-    text-indent: 0.18em;
-    line-height: 1.1;
-    color: var(--ink);
-    user-select: none;
+  
+  body.submit-active .ambient-glow {
+    opacity: 0.85;
   }
-  .success-wordmark .glow {
-    color: var(--ink);
-    text-shadow:
-      0 0 30px rgba(255, 235, 200, 0.55),
-      0 0 60px rgba(255, 200, 140, 0.35);
+  
+  body.submit-active .ground-light {
+    opacity: 0.9;
   }
-  .success-tagline {
-    margin-top: 14px;
-    font-family: 'JetBrains Mono', monospace;
+  
+  /* Subtle breathing on initial state */
+  .door-light, .ambient-glow {
+    animation: breathe 5s ease-in-out infinite;
+  }
+  
+  @keyframes breathe {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.15); }
+  }
+  
+  /* === Top bar === */
+  .topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 32px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 50;
+    pointer-events: none;
+  }
+  .topbar > * { pointer-events: auto; }
+  
+  .brand {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    color: var(--text);
+    text-shadow: 0 2px 12px rgba(0,0,0,0.8);
+  }
+  .brand sup {
+    font-size: 10px;
+    font-weight: 400;
+    color: var(--red);
+    margin-left: 1px;
+    top: -8px;
+  }
+  
+  .tagline {
+    font-size: 14px;
+    color: var(--text);
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.85);
+  }
+  
+  /* === Stage === */
+  .stage {
+    position: relative;
+    min-height: 100vh;
+    width: 100%;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+  }
+  
+  .container {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 120px 48px 80px;
+  }
+  
+  .content { max-width: 640px; position: relative; z-index: 11; }
+  
+  /* === Hero === */
+  .hero-title {
+    font-size: clamp(56px, 9vw, 130px);
+    font-weight: 900;
+    line-height: 0.92;
+    letter-spacing: -0.045em;
+    margin-bottom: 40px;
+    color: var(--text);
+    text-shadow: 0 4px 30px rgba(0,0,0,0.8);
+  }
+  .hero-title .red { color: var(--red); }
+  
+  .hero-sub {
+    font-size: 19px;
+    line-height: 1.5;
+    font-weight: 400;
+    color: var(--text);
+    margin-bottom: 48px;
+    max-width: 480px;
+    text-shadow: 0 2px 16px rgba(0,0,0,0.9);
+  }
+  
+  /* === Form === */
+  .form-row {
+    display: flex;
+    gap: 10px;
+    max-width: 640px;
+    margin-bottom: 48px;
+    flex-wrap: wrap;
+  }
+  
+  .input-field {
+    flex: 1;
+    min-width: 200px;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--line-2);
+    color: var(--text);
+    padding: 18px 22px;
+    font-size: 15px;
+    font-weight: 400;
+    transition: border-color 0.2s, background 0.2s;
+    outline: none;
+    border-radius: 0;
+  }
+  .input-field::placeholder { color: rgba(255,255,255,0.55); }
+  .input-field:focus {
+    border-color: var(--cream);
+    background: rgba(0,0,0,0.7);
+  }
+  
+  .submit-btn {
+    background: var(--cream);
+    color: var(--black);
+    border: 1px solid var(--cream);
+    padding: 18px 32px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.25s;
+    white-space: nowrap;
+    border-radius: 0;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+  .submit-btn:hover:not(:disabled) {
+    background: #fff;
+    transform: translateY(-1px);
+  }
+  .submit-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+  
+  /* === Countdown === */
+  .countdown {
+    display: flex;
+    align-items: flex-start;
+    gap: 28px;
+    margin-bottom: 56px;
+  }
+  .cd-block { display: flex; flex-direction: column; align-items: flex-start; }
+  
+  .cd-num {
+    font-size: 48px;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--text);
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.85);
+  }
+  .cd-unit {
     font-size: 11px;
-    letter-spacing: 0.5em;
-    text-indent: 0.5em;
-    color: var(--ink-dim);
+    font-weight: 600;
+    letter-spacing: 2.5px;
+    color: var(--muted-2);
+    text-transform: uppercase;
+    text-shadow: 0 1px 10px rgba(0,0,0,0.9);
   }
-  .success-id {
-    margin-top: 36px;
-    display: inline-flex;
+  .cd-divider {
+    width: 1px;
+    height: 56px;
+    background: var(--line-2);
+  }
+  
+  /* === Joined === */
+  .joined-row { display: flex; align-items: center; gap: 16px; }
+  .avatar-stack { display: flex; align-items: center; }
+  
+  .avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 2px solid rgba(0,0,0,0.6);
+    margin-left: -10px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.6);
+  }
+  .avatar:first-child { margin-left: 0; }
+  
+  .avatar::after {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 11px;
+    height: 11px;
+    background: rgba(255,255,255,0.32);
+    border-radius: 50%;
+  }
+  .avatar::before {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 16px;
+    background: rgba(255,255,255,0.32);
+    border-radius: 50% 50% 0 0;
+  }
+  .avatar:nth-child(1) { background: linear-gradient(135deg, #3a3a3a, #5a5a5a); }
+  .avatar:nth-child(2) { background: linear-gradient(135deg, #2a2a2a, #4a4a4a); }
+  .avatar:nth-child(3) { background: linear-gradient(135deg, #404040, #606060); }
+  
+  .joined-text {
+    font-size: 14px;
+    color: var(--muted-2);
+    font-weight: 400;
+    text-shadow: 0 1px 10px rgba(0,0,0,0.9);
+  }
+  .joined-text strong { color: var(--text); font-weight: 700; }
+  
+  /* === Error === */
+  .error {
+    display: none;
+    color: var(--red);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    margin-top: -36px;
+    margin-bottom: 24px;
+    text-shadow: 0 1px 10px rgba(0,0,0,0.9);
+  }
+  .error.show { display: block; }
+  
+  /* === Success state === */
+  .success-state {
+    display: none;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+  }
+  .success-state.show { display: block; opacity: 1; }
+  
+  .form-state {
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .form-state.hide {
+    opacity: 0;
+    transform: translateY(-12px);
+    pointer-events: none;
+  }
+  
+  .success-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 3px;
+    color: var(--cream);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    display: flex;
     align-items: center;
     gap: 10px;
-    padding: 8px 18px;
-    border: 1px solid rgba(255, 71, 20, 0.5);
-    background: rgba(20, 8, 2, 0.5);
-    backdrop-filter: blur(4px);
+    text-shadow: 0 1px 10px rgba(0,0,0,0.9);
+  }
+  .success-eyebrow .dot {
+    width: 8px;
+    height: 8px;
+    background: var(--cream);
+    border-radius: 50%;
+    animation: pulse 1.5s ease-in-out infinite;
+    box-shadow: 0 0 12px var(--warm-bright);
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.85); }
+  }
+  
+  .success-id-card {
+    border: 1px solid var(--line-2);
+    padding: 32px 36px;
+    margin-top: 32px;
+    max-width: 460px;
+    background: rgba(0,0,0,0.65);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  .success-id-label {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 11.5px;
-    letter-spacing: 0.4em;
-    color: var(--ember);
-    text-indent: 0.4em;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--muted-2);
+    text-transform: uppercase;
+    margin-bottom: 14px;
   }
-  .success-id .label {
-    font-size: 9px;
-    letter-spacing: 0.3em;
-    color: var(--ink-faint);
-    text-indent: 0.3em;
-  }
-  .success-headline {
-    margin-top: 28px;
-    font-family: 'Cormorant Garamond', serif;
-    font-weight: 400;
-    font-size: clamp(22px, 3.4vw, 28px);
-    letter-spacing: 0.02em;
-    color: var(--ink);
-  }
-  .success-sub {
-    margin-top: 14px;
-    font-size: 13px;
-    line-height: 1.7;
-    color: var(--ink-dim);
-    max-width: 340px;
-  }
-  .success-back {
-    margin-top: 36px;
-    height: 42px;
-    padding: 0 32px;
-    border: 1px solid rgba(244, 241, 234, 0.35);
-    background: transparent;
-    color: var(--ink);
+  .success-id {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.4em;
-    text-indent: 0.4em;
-    cursor: pointer;
-    transition: border-color 200ms ease, color 200ms ease, background 200ms ease;
+    font-size: clamp(28px, 4vw, 36px);
+    font-weight: 500;
+    letter-spacing: 4px;
+    color: var(--text);
+    word-break: break-all;
   }
-  .success-back:hover {
-    border-color: var(--ink);
-    background: rgba(244, 241, 234, 0.05);
+  .success-msg {
+    margin-top: 24px;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--muted-2);
+    max-width: 460px;
+    text-shadow: 0 1px 10px rgba(0,0,0,0.9);
   }
-  .success-spacer {
-    width: 100%;
-    height: clamp(220px, 36vh, 360px);
-    flex-shrink: 0;
+  
+  /* === Mobile === */
+  @media (max-width: 900px) {
+    .topbar { padding: 20px 24px; }
+    .tagline { font-size: 12px; }
+    .door-scene {
+      width: 100%;
+      opacity: 0.5;
+      filter: blur(0.5px);
+    }
+    .container { padding: 100px 24px 60px; }
+    .content { max-width: 100%; }
+    .hero-title { font-size: clamp(48px, 14vw, 80px); margin-bottom: 32px; }
+    .hero-sub { font-size: 16px; margin-bottom: 36px; }
+    .form-row { flex-direction: column; gap: 12px; }
+    .input-field { width: 100%; min-width: 0; }
+    .submit-btn { width: 100%; }
+    .countdown { gap: 16px; flex-wrap: wrap; }
+    .cd-num { font-size: 38px; }
+    .cd-divider { display: none; }
   }
-
-  @media (max-width: 420px) {
-    .ui, .success-ui { padding: 36px 20px 24px; }
-    .door-window, .success-spacer { height: clamp(200px, 32vh, 300px); }
+  @media (max-width: 480px) {
+    .countdown { gap: 14px; }
+    .cd-num { font-size: 32px; }
+    .cd-unit { font-size: 9px; letter-spacing: 1.5px; }
   }
 </style>
 </head>
-<body data-stage="initial">
+<body>
 
-  <canvas id="scene"></canvas>
-  <div class="whiteout"></div>
+<!-- STARFIELD -->
+<div class="starfield" id="starfield"></div>
 
-  <!-- HOME UI -->
-  <div class="ui">
-    <h1 class="wordmark">D<span class="a-red">A</span><span class="a-white">A</span>RK</h1>
-    <div class="tagline"><span class="you-red">YOU</span><span class="vs">VS</span><span class="you-white">YOU</span></div>
+<!-- HYPERSPACE STREAKS -->
+<div class="hyperspace" id="hyperspace"></div>
 
-    <div class="badge">COMING SOON</div>
-    <div class="headline">The journey begins within.</div>
-    <p class="subcopy">
-      Most people fail.<br>
-      Not because they lack effort.<br>
-      Because they lack <strong>structure</strong>.
-    </p>
+<!-- DOOR SCENE -->
+<div class="door-scene">
+  <svg class="door-svg" viewBox="0 0 800 1000" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <!-- Dim warm glow (initial) -->
+      <radialGradient id="doorGlowDim" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#ff8533" stop-opacity="0.95"/>
+        <stop offset="40%" stop-color="#cc5511" stop-opacity="0.7"/>
+        <stop offset="80%" stop-color="#3a1a08" stop-opacity="0.3"/>
+        <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+      </radialGradient>
+      
+      <!-- Bright cream burst (submit) -->
+      <radialGradient id="doorGlowBright" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#fffaef" stop-opacity="1"/>
+        <stop offset="30%" stop-color="#ffe5b8" stop-opacity="0.95"/>
+        <stop offset="70%" stop-color="#ffaa55" stop-opacity="0.5"/>
+        <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+      </radialGradient>
+      
+      <!-- Ambient outer glow -->
+      <radialGradient id="ambientDim" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#ff7733" stop-opacity="0.4"/>
+        <stop offset="50%" stop-color="#3a1a08" stop-opacity="0.15"/>
+        <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+      </radialGradient>
+      
+      <!-- Door frame material -->
+      <linearGradient id="doorFrame" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#0a0a0a"/>
+        <stop offset="50%" stop-color="#1a1410"/>
+        <stop offset="100%" stop-color="#0a0a0a"/>
+      </linearGradient>
+      
+      <!-- Door frame glow halo -->
+      <radialGradient id="frameGlowGrad" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#ffd9a8" stop-opacity="0.6"/>
+        <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+      </radialGradient>
+      
+      <!-- Ground light spill -->
+      <radialGradient id="groundSpill" cx="50%" cy="0%" r="60%">
+        <stop offset="0%" stop-color="#ffaa55" stop-opacity="0.5"/>
+        <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+      </radialGradient>
+      
+      <filter id="softBlur"><feGaussianBlur stdDeviation="6"/></filter>
+      <filter id="heavyBlur"><feGaussianBlur stdDeviation="20"/></filter>
+    </defs>
+    
+    <!-- Outer ambient glow (huge soft halo around door) -->
+    <ellipse class="ambient-glow" cx="400" cy="500" rx="500" ry="500" fill="url(#ambientDim)" filter="url(#heavyBlur)"/>
+    
+    <!-- Ground light spill -->
+    <ellipse class="ground-light" cx="400" cy="800" rx="350" ry="80" fill="url(#groundSpill)" filter="url(#softBlur)"/>
+    
+    <!-- Door frame outer halo -->
+    <ellipse class="door-frame-glow" cx="400" cy="540" rx="180" ry="280" fill="url(#frameGlowGrad)" filter="url(#softBlur)"/>
+    
+    <!-- Door frame (dark silhouette) -->
+    <path d="M 300 280 L 300 760 L 500 760 L 500 280 Q 500 270 490 270 L 310 270 Q 300 270 300 280 Z" 
+          fill="url(#doorFrame)" stroke="#1a1410" stroke-width="2"/>
+    
+    <!-- Door light (the glowing inside) -->
+    <path class="door-light" d="M 320 290 L 320 760 L 480 760 L 480 290 Z"/>
+    
+    <!-- Inner brightest core -->
+    <path class="door-light" d="M 350 320 L 350 740 L 450 740 L 450 320 Z" opacity="0.6"/>
+    
+    <!-- Door edge highlights -->
+    <line x1="320" y1="290" x2="320" y2="760" stroke="#ffd9a8" stroke-width="1" opacity="0.5"/>
+    <line x1="480" y1="290" x2="480" y2="760" stroke="#ffd9a8" stroke-width="1" opacity="0.5"/>
+    <line x1="320" y1="290" x2="480" y2="290" stroke="#ffd9a8" stroke-width="1" opacity="0.4"/>
+    
+    <!-- Light beam coming out -->
+    <path class="ground-light" d="M 320 760 L 480 760 L 600 850 L 200 850 Z" fill="url(#groundSpill)" opacity="0.4" filter="url(#softBlur)"/>
+  </svg>
+</div>
 
-    <form class="form" id="waitlistForm" novalidate>
-      <label class="field">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="1"/><path d="M3 7l9 6 9-6"/></svg>
-        <input type="email" name="email" id="email" placeholder="Enter your email" autocomplete="email" required>
-      </label>
-      <label class="field">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 4h3l2 5-2 1a12 12 0 0 0 6 6l1-2 5 2v3a2 2 0 0 1-2 2A17 17 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>
-        <input type="tel" name="phone" id="phone" placeholder="Enter your phone number" autocomplete="tel" required>
-      </label>
-      <button type="submit" class="submit" id="submitBtn">JOIN WAITLIST</button>
-      <div class="form-error" id="formError"></div>
-    </form>
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="brand">DAARK<sup>®</sup></div>
+  <div class="tagline">No noise. No shortcuts.</div>
+</div>
 
-    <div class="live-count" id="liveCount">
-      <div class="live-count-num"><span class="live-count-pulse"></span><span id="liveCountNum">0</span></div>
-    </div>
-
-    <div class="door-window"></div>
-
-    <footer class="footer">
-      <div class="footer-cta">JOIN THE WAITLIST. BE PART OF THE FIRST.</div>
-      <div class="socials">
-        <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.8" fill="currentColor"/></svg></a>
-        <a href="#" aria-label="Twitter"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
-        <a href="#" aria-label="Email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5" width="18" height="14" rx="1"/><path d="M3 7l9 6 9-6"/></svg></a>
+<!-- STAGE -->
+<div class="stage">
+  <div class="container">
+    <div class="content">
+      
+      <!-- FORM STATE -->
+      <div class="form-state" id="formState">
+        <h1 class="hero-title">
+          <span class="red">YOU</span> <span class="red">VS</span> <span>YOU</span>
+        </h1>
+        
+        <div class="hero-sub">
+          Most people fail.<br/>
+          Not because they lack effort.<br/>
+          Because they lack structure.
+        </div>
+        
+        <form id="waitlistForm" autocomplete="off" novalidate>
+          <div class="form-row">
+            <input class="input-field" type="email" id="email" placeholder="Email address" required />
+            <input class="input-field" type="tel" id="phone" placeholder="Phone number" required />
+            <button type="submit" class="submit-btn" id="submitBtn">Join Waitlist</button>
+          </div>
+          <div class="error" id="errorMsg"></div>
+        </form>
+        
+        <div class="countdown">
+          <div class="cd-block"><div class="cd-num" id="cdDays">21</div><div class="cd-unit">Days</div></div>
+          <div class="cd-divider"></div>
+          <div class="cd-block"><div class="cd-num" id="cdHrs">00</div><div class="cd-unit">Hours</div></div>
+          <div class="cd-divider"></div>
+          <div class="cd-block"><div class="cd-num" id="cdMin">00</div><div class="cd-unit">Minutes</div></div>
+          <div class="cd-divider"></div>
+          <div class="cd-block"><div class="cd-num" id="cdSec">00</div><div class="cd-unit">Seconds</div></div>
+        </div>
+        
+        <div class="joined-row">
+          <div class="avatar-stack">
+            <div class="avatar"></div>
+            <div class="avatar"></div>
+            <div class="avatar"></div>
+          </div>
+          <div class="joined-text">Already <strong id="joinedCount">—</strong> joined</div>
+        </div>
       </div>
-      <div class="copyright">© 2026 DAARK. ALL RIGHTS RESERVED.</div>
-    </footer>
-  </div>
-
-  <!-- SUCCESS UI — mirrors home layout, content swapped -->
-  <div class="success-ui">
-    <h1 class="success-wordmark"><span class="glow">YOU'RE THE LIGHT.</span></h1>
-    <div class="success-tagline">THE COLD MIRROR HAS SEEN YOU</div>
-
-    <div class="success-id">
-      <span class="label">REG</span>
-      <span id="successIdValue">V01/IN/0001</span>
+      
+      <!-- SUCCESS STATE -->
+      <div class="success-state" id="successState">
+        <div class="success-eyebrow"><span class="dot"></span> The door is open</div>
+        <h1 class="hero-title"><span class="red">YOU'RE</span> <span>IN.</span></h1>
+        <div class="hero-sub">
+          The journey begins within.<br/>
+          Your seat is secured.
+        </div>
+        <div class="success-id-card">
+          <div class="success-id-label">Your Registration ID</div>
+          <div class="success-id" id="successId">V01/IN/0001</div>
+        </div>
+        <div class="success-msg">
+          Check your email. Your ID has been sent.<br/>
+          Keep it. You'll need it on launch day.
+        </div>
+      </div>
+      
     </div>
-    <div class="success-headline">The journey begins within.</div>
-    <p class="success-sub">
-      Confirmation sent to your email.<br>
-      Stand by for activation.
-    </p>
-    <button class="success-back" id="backHome">BACK TO HOME</button>
-
-    <div class="success-spacer"></div>
   </div>
+</div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
-/* =========================================================
-   CONFIG — fill these in
-   ========================================================= */
-const N8N_WEBHOOK_URL    = "https://YOUR-N8N-INSTANCE/webhook/daark-waitlist";  // <-- REPLACE
-const SUPABASE_URL       = "https://YOUR-PROJECT.supabase.co";                  // <-- REPLACE
-const SUPABASE_ANON_KEY  = "YOUR_PUBLIC_ANON_KEY";                              // <-- REPLACE
-const SUPABASE_TABLE     = "registration";
-
-/* =========================================================
-   THREE.JS SCENE
-   ========================================================= */
-const canvas = document.getElementById('scene');
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setClearColor(0x000000, 1);
-
-const scene = new THREE.Scene();
-scene.fog = new THREE.FogExp2(0x000000, 0.018);
-
-const camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.1, 800);
-const CAM_HOME = { x: 0, y: 0, z: 22 };
-camera.position.set(CAM_HOME.x, CAM_HOME.y, CAM_HOME.z);
-camera.lookAt(0, -2, 0);
-
-/* ---------- Star field with tunnel collapse ---------- */
-const STAR_COUNT = 900;
-const starPositions = new Float32Array(STAR_COUNT * 3);
-const starColors    = new Float32Array(STAR_COUNT * 3);
-const starSpeeds    = new Float32Array(STAR_COUNT);
-
-const TUNNEL_RADIUS = 60;
-const TUNNEL_DEPTH  = 220;
-const NEAR_CLEAR    = 4;
-
-function seedStar(i, freshDepth = false) {
-  let x, y;
-  do {
-    x = (Math.random() - 0.5) * TUNNEL_RADIUS * 2;
-    y = (Math.random() - 0.5) * TUNNEL_RADIUS * 2;
-  } while (Math.abs(x) < NEAR_CLEAR && Math.abs(y) < NEAR_CLEAR + 2);
-  const z = freshDepth ? -TUNNEL_DEPTH : (-Math.random() * TUNNEL_DEPTH);
-  starPositions[i*3]   = x;
-  starPositions[i*3+1] = y;
-  starPositions[i*3+2] = z;
-
-  const r = Math.random();
-  if (r < 0.78) {
-    starColors[i*3] = 1.0; starColors[i*3+1] = 1.0; starColors[i*3+2] = 1.0;
-  } else if (r < 0.92) {
-    // hot iron tint
-    starColors[i*3] = 1.0; starColors[i*3+1] = 0.4; starColors[i*3+2] = 0.15;
-  } else {
-    starColors[i*3] = 0.55; starColors[i*3+1] = 0.75; starColors[i*3+2] = 1.0;
-  }
-  starSpeeds[i] = 0.5 + Math.random() * 1.2;
-}
-for (let i = 0; i < STAR_COUNT; i++) seedStar(i);
-
-const starGeo = new THREE.BufferGeometry();
-starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
-starGeo.setAttribute('color',    new THREE.BufferAttribute(starColors, 3));
-
-const starMat = new THREE.PointsMaterial({
-  size: 0.16,
-  vertexColors: true,
-  transparent: true,
-  opacity: 0.95,
-  sizeAttenuation: true,
-  blending: THREE.AdditiveBlending,
-  depthWrite: false
-});
-scene.add(new THREE.Points(starGeo, starMat));
-
-/* ---------- Nebula haze ---------- */
-function makeHazeTexture() {
-  const c = document.createElement('canvas');
-  c.width = c.height = 256;
-  const ctx = c.getContext('2d');
-  const g = ctx.createRadialGradient(128, 128, 10, 128, 128, 128);
-  g.addColorStop(0,   'rgba(255, 90, 30, 0.55)');
-  g.addColorStop(0.4, 'rgba(120, 80, 200, 0.18)');
-  g.addColorStop(1,   'rgba(0,0,0,0)');
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, 256, 256);
-  return new THREE.CanvasTexture(c);
-}
-const hazeTex = makeHazeTexture();
-const hazeSprites = [];
-for (let i = 0; i < 12; i++) {
-  const mat = new THREE.SpriteMaterial({
-    map: hazeTex,
-    transparent: true,
-    opacity: 0.22,
-    blending: THREE.AdditiveBlending,
-    depthWrite: false
-  });
-  if (Math.random() < 0.4) mat.color.setRGB(0.4, 0.5, 1.0);
-  const s = new THREE.Sprite(mat);
-  const r = 25 + Math.random() * 35;
-  const a = Math.random() * Math.PI * 2;
-  s.position.set(Math.cos(a) * r, Math.sin(a) * r * 0.7, -40 - Math.random() * 140);
-  const sc = 30 + Math.random() * 50;
-  s.scale.set(sc, sc, 1);
-  scene.add(s);
-  hazeSprites.push(s);
-}
-
-/* ---------- Doorway ---------- */
-const doorGroup = new THREE.Group();
-doorGroup.position.set(0, -3.2, -6);
-scene.add(doorGroup);
-
-// Back wall
-const wall = new THREE.Mesh(
-  new THREE.PlaneGeometry(14, 10),
-  new THREE.MeshBasicMaterial({ color: 0x080604 })
-);
-wall.position.set(0, 1.5, -0.2);
-doorGroup.add(wall);
-
-// Side jambs (recessed feel)
-const jambMat = new THREE.MeshBasicMaterial({ color: 0x050302 });
-const leftJamb = new THREE.Mesh(new THREE.PlaneGeometry(0.4, 5.4), jambMat);
-leftJamb.position.set(-1.25, 1.2, 0.06);
-doorGroup.add(leftJamb);
-const rightJamb = new THREE.Mesh(new THREE.PlaneGeometry(0.4, 5.4), jambMat);
-rightJamb.position.set(1.25, 1.2, 0.06);
-doorGroup.add(rightJamb);
-
-// Top jamb
-const topJamb = new THREE.Mesh(new THREE.PlaneGeometry(2.9, 0.35), jambMat);
-topJamb.position.set(0, 3.85, 0.06);
-doorGroup.add(topJamb);
-
-// Light spill on wall (additive sprite around door)
-const spillTex = (() => {
-  const c = document.createElement('canvas');
-  c.width = c.height = 256;
-  const ctx = c.getContext('2d');
-  const g = ctx.createRadialGradient(128, 200, 5, 128, 200, 140);
-  g.addColorStop(0,   'rgba(255, 90, 35, 0.95)');
-  g.addColorStop(0.3, 'rgba(255, 50, 15, 0.4)');
-  g.addColorStop(1,   'rgba(0,0,0,0)');
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, 256, 256);
-  return new THREE.CanvasTexture(c);
-})();
-const spillMat = new THREE.SpriteMaterial({
-  map: spillTex,
-  transparent: true,
-  blending: THREE.AdditiveBlending,
-  depthWrite: false,
-  opacity: 0.85
-});
-const spill = new THREE.Sprite(spillMat);
-spill.scale.set(11, 11, 1);
-spill.position.set(0, 1.2, 0.0);
-doorGroup.add(spill);
-
-// THE DOOR — emissive plane
-const doorMat = new THREE.MeshBasicMaterial({
-  color: new THREE.Color(1.0, 0.28, 0.08),
-  transparent: true,
-  opacity: 1.0
-});
-const door = new THREE.Mesh(new THREE.PlaneGeometry(2.1, 4.9), doorMat);
-door.position.set(0, 1.2, 0.07);
-doorGroup.add(door);
-
-// Door bloom halo
-const bloomTex = (() => {
-  const c = document.createElement('canvas');
-  c.width = c.height = 256;
-  const ctx = c.getContext('2d');
-  const g = ctx.createRadialGradient(128, 128, 0, 128, 128, 128);
-  g.addColorStop(0,   'rgba(255, 200, 130, 1)');
-  g.addColorStop(0.2, 'rgba(255, 110, 40, 0.85)');
-  g.addColorStop(0.6, 'rgba(255, 50, 10, 0.22)');
-  g.addColorStop(1,   'rgba(0,0,0,0)');
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, 256, 256);
-  return new THREE.CanvasTexture(c);
-})();
-const doorBloomMat = new THREE.SpriteMaterial({
-  map: bloomTex,
-  transparent: true,
-  blending: THREE.AdditiveBlending,
-  depthWrite: false,
-  opacity: 0.9
-});
-const doorBloom = new THREE.Sprite(doorBloomMat);
-doorBloom.scale.set(8, 9, 1);
-doorBloom.position.set(0, 1.2, 0.04);
-doorGroup.add(doorBloom);
-
-// Floor
-const floor = new THREE.Mesh(
-  new THREE.PlaneGeometry(20, 8),
-  new THREE.MeshBasicMaterial({ color: 0x0a0604 })
-);
-floor.rotation.x = -Math.PI / 2;
-floor.position.set(0, -1.3, 2.0);
-doorGroup.add(floor);
-
-// Floor spill
-const floorSpillTex = (() => {
-  const c = document.createElement('canvas');
-  c.width = 256; c.height = 256;
-  const ctx = c.getContext('2d');
-  const g = ctx.createRadialGradient(128, 0, 5, 128, 0, 220);
-  g.addColorStop(0,   'rgba(255, 90, 30, 0.95)');
-  g.addColorStop(0.3, 'rgba(255, 60, 15, 0.5)');
-  g.addColorStop(1,   'rgba(0,0,0,0)');
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, 256, 256);
-  return new THREE.CanvasTexture(c);
-})();
-const floorSpillMat = new THREE.MeshBasicMaterial({
-  map: floorSpillTex,
-  transparent: true,
-  blending: THREE.AdditiveBlending,
-  depthWrite: false,
-  opacity: 0.9
-});
-const floorSpill = new THREE.Mesh(
-  new THREE.PlaneGeometry(13, 9),
-  floorSpillMat
-);
-floorSpill.rotation.x = -Math.PI / 2;
-floorSpill.position.set(0, -1.29, 2.0);
-doorGroup.add(floorSpill);
-
-/* =========================================================
-   STATE
-   ========================================================= */
-const state = {
-  starSpeed: 0.05,           starSpeedTarget: 0.05,
-  doorHueR: 1.0, doorHueG: 0.28, doorHueB: 0.08,
-  doorHueTargetR: 1.0, doorHueTargetG: 0.28, doorHueTargetB: 0.08,
-  doorGlow: 1.0,             doorGlowTarget: 1.0,
-  cameraZ: CAM_HOME.z,       cameraZTarget: CAM_HOME.z,
-  hazeOpacityMul: 1.0,       hazeOpacityMulTarget: 1.0,
-};
-
-function setStage(stage) {
-  document.body.setAttribute('data-stage', stage);
-  switch (stage) {
-    case 'initial':
-      state.starSpeedTarget = 0.05;
-      state.doorGlowTarget = 1.0;
-      state.cameraZTarget = CAM_HOME.z;
-      state.hazeOpacityMulTarget = 1.0;
-      state.doorHueTargetR = 1.0; state.doorHueTargetG = 0.28; state.doorHueTargetB = 0.08;
-      break;
-    case 'warming':
-      state.starSpeedTarget = 0.12;
-      state.doorGlowTarget = 1.25;
-      state.cameraZTarget = CAM_HOME.z - 0.5;
-      break;
-    case 'pulling':
-      state.starSpeedTarget = 0.45;
-      state.doorGlowTarget = 1.45;
-      state.cameraZTarget = CAM_HOME.z - 1.5;
-      state.hazeOpacityMulTarget = 1.4;
-      break;
-    case 'processing':
-      state.starSpeedTarget = 0.95;
-      state.doorGlowTarget = 2.1;
-      state.cameraZTarget = CAM_HOME.z - 4.0;
-      state.hazeOpacityMulTarget = 1.6;
-      break;
-    case 'flash':
-      // brief moment where stars peak, door blows out, whiteout fades in
-      state.starSpeedTarget = 2.4;
-      state.doorGlowTarget = 5.0;
-      state.cameraZTarget = doorGroup.position.z - 0.8;
-      state.doorHueTargetR = 1.0; state.doorHueTargetG = 0.95; state.doorHueTargetB = 0.85;
-      state.hazeOpacityMulTarget = 0.0;
-      break;
-    case 'success':
-      // settled dark scene with white-cream door
-      state.starSpeedTarget = 0.18;
-      state.doorGlowTarget = 1.6;
-      state.cameraZTarget = CAM_HOME.z - 1.0;
-      state.hazeOpacityMulTarget = 0.6;
-      state.doorHueTargetR = 1.0; state.doorHueTargetG = 0.96; state.doorHueTargetB = 0.88;
-      break;
-  }
-}
-
-/* =========================================================
-   ANIMATION LOOP
-   ========================================================= */
-const clock = new THREE.Clock();
-function lerp(a, b, t) { return a + (b - a) * t; }
-
-function animate() {
-  requestAnimationFrame(animate);
-  const dt = Math.min(clock.getDelta(), 0.05);
-
-  state.starSpeed         = lerp(state.starSpeed,         state.starSpeedTarget,         dt * 2.2);
-  state.doorGlow          = lerp(state.doorGlow,          state.doorGlowTarget,          dt * 2.0);
-  state.cameraZ           = lerp(state.cameraZ,           state.cameraZTarget,           dt * 1.6);
-  state.hazeOpacityMul    = lerp(state.hazeOpacityMul,    state.hazeOpacityMulTarget,    dt * 1.5);
-  state.doorHueR          = lerp(state.doorHueR,          state.doorHueTargetR,          dt * 1.8);
-  state.doorHueG          = lerp(state.doorHueG,          state.doorHueTargetG,          dt * 1.8);
-  state.doorHueB          = lerp(state.doorHueB,          state.doorHueTargetB,          dt * 1.8);
-
-  // Star motion + tunnel collapse (key realism upgrade)
-  const pos = starGeo.attributes.position.array;
-  const collapse = 1 - Math.min(state.starSpeed * 0.005, 0.012); // pull toward center as speed climbs
-  for (let i = 0; i < STAR_COUNT; i++) {
-    pos[i*3 + 2] += state.starSpeed * starSpeeds[i] * 1.8;
-    pos[i*3]     *= collapse;
-    pos[i*3 + 1] *= collapse;
-    if (pos[i*3 + 2] > camera.position.z) {
-      seedStar(i, true);
+  // ============ CONFIG ============
+  const N8N_WEBHOOK = 'https://daark-live.app.n8n.cloud/webhook/0ebd60fd-3fc0-4d30-a4a6-dc76d7cee866';
+  const SUPABASE_URL = 'https://imuoxelvoaypwzoytaol.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImltdW94ZWx2b2F5cHd6b3l0YW9sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MjE1NTYsImV4cCI6MjA5MTk5NzU1Nn0.8wAMkQggrYUTwwdHariVKbX_Q-V2ov9C7_y0j5TesUg';
+  const COUNTDOWN_TARGET = new Date(Date.now() + 21 * 24 * 60 * 60 * 1000);
+  
+  // ============ STARFIELD GENERATION ============
+  function generateStars() {
+    const sf = document.getElementById('starfield');
+    for (let i = 0; i < 150; i++) {
+      const s = document.createElement('div');
+      s.className = 'star';
+      const size = Math.random() * 2 + 0.5;
+      s.style.width = size + 'px';
+      s.style.height = size + 'px';
+      s.style.left = Math.random() * 100 + '%';
+      s.style.top = Math.random() * 100 + '%';
+      s.style.setProperty('--dur', (Math.random() * 4 + 2) + 's');
+      s.style.setProperty('--delay', Math.random() * 5 + 's');
+      s.style.setProperty('--max-op', (Math.random() * 0.6 + 0.4));
+      sf.appendChild(s);
     }
   }
-  starGeo.attributes.position.needsUpdate = true;
-  starMat.size = 0.16 + Math.min(state.starSpeed * 0.22, 0.55);
-
-  // Door
-  doorMat.color.setRGB(state.doorHueR, state.doorHueG, state.doorHueB);
-  doorBloomMat.opacity = Math.min(0.35 + state.doorGlow * 0.5, 1.0);
-  doorBloom.scale.set(7 + state.doorGlow * 3.5, 9 + state.doorGlow * 4.5, 1);
-  spillMat.opacity = Math.min(0.45 + state.doorGlow * 0.4, 1.0);
-  floorSpillMat.opacity = Math.min(0.6 + state.doorGlow * 0.5, 1.0);
-
-  // Tint bloom + spill toward white as door turns white-cream
-  const heat = state.doorHueG; // proxy: 0.28 = red, ~0.96 = cream
-  if (heat > 0.5) {
-    doorBloomMat.color.setRGB(1.0, 0.95, 0.85);
-    spillMat.color.setRGB(1.0, 0.92, 0.8);
-    floorSpillMat.color.setRGB(1.0, 0.9, 0.75);
-  } else {
-    doorBloomMat.color.setRGB(1.0, 0.55, 0.25);
-    spillMat.color.setRGB(1.0, 0.45, 0.18);
-    floorSpillMat.color.setRGB(1.0, 0.4, 0.15);
-  }
-
-  // Haze drift
-  hazeSprites.forEach((s, i) => {
-    s.position.z += state.starSpeed * 0.4;
-    if (s.position.z > camera.position.z) s.position.z = -180;
-    s.material.opacity = (0.18 + (i % 3) * 0.04) * state.hazeOpacityMul;
-  });
-
-  // Camera
-  camera.position.z = state.cameraZ;
-  const t = clock.elapsedTime;
-  camera.position.x = Math.sin(t * 0.15) * 0.15;
-  camera.position.y = Math.cos(t * 0.1) * 0.1;
-  camera.lookAt(0, -2, doorGroup.position.z);
-
-  renderer.render(scene, camera);
-}
-animate();
-
-window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});
-
-/* =========================================================
-   FORM LOGIC
-   ========================================================= */
-const form    = document.getElementById('waitlistForm');
-const emailEl = document.getElementById('email');
-const phoneEl = document.getElementById('phone');
-const btn     = document.getElementById('submitBtn');
-const errEl   = document.getElementById('formError');
-const successIdEl = document.getElementById('successIdValue');
-const backBtn = document.getElementById('backHome');
-
-let warmed = false;
-const warm = () => {
-  if (warmed) return;
-  warmed = true;
-  setStage('warming');
-  const checkPull = () => {
-    if (emailEl.value.length >= 4 || phoneEl.value.length >= 4) {
-      setStage('pulling');
-      emailEl.removeEventListener('input', checkPull);
-      phoneEl.removeEventListener('input', checkPull);
+  generateStars();
+  
+  // ============ HYPERSPACE STREAKS ============
+  function generateHyperspace() {
+    const h = document.getElementById('hyperspace');
+    for (let i = 0; i < 12; i++) {
+      const s = document.createElement('div');
+      s.className = 'h-star';
+      s.style.top = Math.random() * 100 + '%';
+      s.style.setProperty('--dur', (Math.random() * 6 + 6) + 's');
+      s.style.setProperty('--delay', (-Math.random() * 8) + 's');
+      h.appendChild(s);
     }
-  };
-  emailEl.addEventListener('input', checkPull);
-  phoneEl.addEventListener('input', checkPull);
-};
-emailEl.addEventListener('focus', warm);
-phoneEl.addEventListener('focus', warm);
-
-const isEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
-const isPhone = (v) => /^[+\d][\d\s\-()]{6,}$/.test(v.trim());
-
-form.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  errEl.textContent = '';
-
-  const email = emailEl.value.trim();
-  const phone = phoneEl.value.trim();
-
-  if (!isEmail(email)) { errEl.textContent = 'INVALID EMAIL'; return; }
-  if (!isPhone(phone)) { errEl.textContent = 'INVALID PHONE'; return; }
-
-  setStage('processing');
-  btn.disabled = true;
-  btn.classList.add('is-pressed');
-  btn.innerHTML = '<span class="dots">JOINING</span>';
-
-  try {
-    const res = await fetch(N8N_WEBHOOK_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, phone })
-    });
-
-    if (!res.ok) {
-      const text = await res.text().catch(() => '');
-      throw new Error(text || ('STATUS ' + res.status));
+  }
+  generateHyperspace();
+  
+  // ============ COUNTRY DETECTION ============
+  let detectedPrefix = '+91';
+  
+  async function detectCountry() {
+    try {
+      const res = await fetch('https://ipapi.co/json/');
+      if (!res.ok) throw new Error('fail');
+      const data = await res.json();
+      const cc = data.country_calling_code || '+91';
+      detectedPrefix = cc.startsWith('+') ? cc : '+' + cc;
+    } catch (e) {
+      detectedPrefix = '+91';
     }
-
-    const data = await res.json().catch(() => ({}));
-    const uniqueId = data.unique_id || data.uniqueId || 'V01/IN/----';
-    successIdEl.textContent = uniqueId;
-
-    // Brief flash → settle into dark success scene
-    setStage('flash');
-    setTimeout(() => setStage('success'), 600);
-
-  } catch (err) {
-    setStage('pulling');
-    btn.disabled = false;
-    btn.classList.remove('is-pressed');
-    btn.textContent = 'JOIN WAITLIST';
-    errEl.textContent = 'SUBMISSION FAILED. RETRY.';
-    console.error('[DAARK waitlist]', err);
   }
-});
-
-backBtn.addEventListener('click', () => {
-  // Reset form + scene back to initial state without reload
-  emailEl.value = '';
-  phoneEl.value = '';
-  btn.disabled = false;
-  btn.classList.remove('is-pressed');
-  btn.textContent = 'JOIN WAITLIST';
-  errEl.textContent = '';
-  warmed = false;
-  setStage('initial');
-});
-
-/* =========================================================
-   LIVE COUNT — direct query to Supabase REST
-   Uses HEAD + Prefer: count=exact, reads count from header
-   ========================================================= */
-async function fetchLiveCount() {
-  if (!SUPABASE_URL || SUPABASE_URL.includes('YOUR-PROJECT')) {
-    // Config not set — show placeholder so you can see layout
-    animateCount(0);
-    return;
+  detectCountry();
+  
+  // ============ COUNTDOWN ============
+  function updateCountdown() {
+    const diff = COUNTDOWN_TARGET - new Date();
+    if (diff <= 0) {
+      ['cdDays','cdHrs','cdMin','cdSec'].forEach(id => document.getElementById(id).textContent = '00');
+      return;
+    }
+    const days = Math.floor(diff / 86400000);
+    const hrs = Math.floor((diff % 86400000) / 3600000);
+    const min = Math.floor((diff % 3600000) / 60000);
+    const sec = Math.floor((diff % 60000) / 1000);
+    document.getElementById('cdDays').textContent = String(days).padStart(2,'0');
+    document.getElementById('cdHrs').textContent = String(hrs).padStart(2,'0');
+    document.getElementById('cdMin').textContent = String(min).padStart(2,'0');
+    document.getElementById('cdSec').textContent = String(sec).padStart(2,'0');
   }
-  try {
-    const url = `${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}?select=*`;
-    const res = await fetch(url, {
-      method: 'HEAD',
-      headers: {
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-        'Prefer': 'count=exact',
-        'Range-Unit': 'items',
-        'Range': '0-0'
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
+  
+  // ============ LIVE COUNT ============
+  async function loadJoinedCount() {
+    try {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/registration?select=id', {
+        method: 'GET',
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+          'Prefer': 'count=exact',
+          'Range': '0-0'
+        }
+      });
+      const cr = res.headers.get('content-range');
+      let count = 0;
+      if (cr) count = parseInt(cr.split('/')[1]) || 0;
+      animateCount(0, count, 1500);
+    } catch (e) {
+      document.getElementById('joinedCount').textContent = '—';
+    }
+  }
+  
+  function animateCount(from, to, duration) {
+    const el = document.getElementById('joinedCount');
+    const startTime = performance.now();
+    function step(now) {
+      const progress = Math.min((now - startTime) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = Math.floor(from + (to - from) * eased);
+      el.textContent = current.toLocaleString();
+      if (progress < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  loadJoinedCount();
+  
+  // ============ FORM SUBMIT ============
+  document.getElementById('waitlistForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const email = document.getElementById('email').value.trim();
+    let phoneRaw = document.getElementById('phone').value.trim().replace(/\s+/g, '');
+    const errorEl = document.getElementById('errorMsg');
+    const btn = document.getElementById('submitBtn');
+    errorEl.classList.remove('show');
+    
+    if (!email || !phoneRaw) {
+      errorEl.textContent = 'Both fields required.';
+      errorEl.classList.add('show');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errorEl.textContent = 'Invalid email.';
+      errorEl.classList.add('show');
+      return;
+    }
+    
+    let fullPhone;
+    if (phoneRaw.startsWith('+')) {
+      fullPhone = phoneRaw;
+    } else {
+      phoneRaw = phoneRaw.replace(/^0+/, '');
+      fullPhone = detectedPrefix + phoneRaw;
+    }
+    
+    if (fullPhone.length < 8) {
+      errorEl.textContent = 'Invalid phone number.';
+      errorEl.classList.add('show');
+      return;
+    }
+    
+    btn.disabled = true;
+    btn.textContent = 'Opening...';
+    
+    // Stage 1: stars accelerate
+    document.body.classList.add('submitting');
+    
+    try {
+      const res = await fetch(N8N_WEBHOOK, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email, phone: fullPhone })
+      });
+      const data = await res.json();
+      
+      if (data.status === 'success' && data.unique_id) {
+        // Stage 2: door floods bright cream
+        document.body.classList.add('submit-active');
+        document.getElementById('successId').textContent = data.unique_id;
+        
+        // Stage 3: form fades, success appears
+        setTimeout(() => {
+          document.getElementById('formState').classList.add('hide');
+          setTimeout(() => {
+            document.getElementById('formState').style.display = 'none';
+            document.getElementById('successState').classList.add('show');
+          }, 600);
+        }, 800);
+      } else {
+        throw new Error('fail');
       }
-    });
-    // Supabase returns Content-Range like "0-0/247"
-    const range = res.headers.get('content-range') || '';
-    const total = parseInt(range.split('/')[1], 10);
-    animateCount(isNaN(total) ? 0 : total);
-  } catch (err) {
-    console.error('[DAARK live count]', err);
-    animateCount(0);
-  }
-}
-
-function animateCount(target) {
-  const wrap = document.getElementById('liveCount');
-  const numEl = document.getElementById('liveCountNum');
-  wrap.classList.add('is-ready');
-
-  const duration = 1400;
-  const start = performance.now();
-  const startVal = 0;
-  const easeOut = (t) => 1 - Math.pow(1 - t, 3);
-
-  function tick(now) {
-    const t = Math.min((now - start) / duration, 1);
-    const v = Math.round(startVal + (target - startVal) * easeOut(t));
-    numEl.textContent = v.toLocaleString();
-    if (t < 1) requestAnimationFrame(tick);
-  }
-  requestAnimationFrame(tick);
-}
-
-fetchLiveCount();
+    } catch (err) {
+      document.body.classList.remove('submitting');
+      errorEl.textContent = 'Something went wrong. Try again.';
+      errorEl.classList.add('show');
+      btn.disabled = false;
+      btn.textContent = 'Join Waitlist';
+    }
+  });
+  
+  document.getElementById('phone').addEventListener('input', function(e) {
+    e.target.value = e.target.value.replace(/[^\d+]/g, '');
+  });
 </script>
+
 </body>
 </html>
