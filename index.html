@@ -1,168 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DAARK — You vs You</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #f4f1ea;
+    --ink-dim: rgba(244, 241, 234, 0.6);
+    --ink-faint: rgba(244, 241, 234, 0.3);
+    --ember: #ff6a1a;
+    --ember-soft: #ff8a3d;
+    --ember-deep: #c84a0a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #000;
+    color: var(--ink);
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    position: relative;
+  }
+
+  #scene {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    display: block;
+  }
+
+  .whiteout {
+    position: fixed; inset: 0;
+    background: #fff;
+    z-index: 5;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 1100ms cubic-bezier(0.7, 0, 0.84, 0);
+  }
+  body[data-stage="flythrough"] .whiteout { opacity: 1; transition-duration: 900ms; }
+
+  .ui {
+    position: relative;
+    z-index: 2;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 56px 24px 36px;
+    transition: opacity 600ms ease, transform 800ms cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  body[data-stage="processing"] .ui { transform: translateY(-6px); }
+  body[data-stage="flythrough"] .ui { opacity: 0; transform: translateY(-30px); pointer-events: none; }
+
+  .wordmark {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(46px, 9vw, 78px);
+    letter-spacing: 0.32em;
+    text-indent: 0.32em;
+    line-height: 1;
+    user-select: none;
+  }
+  .wordmark .accent { color: var(--ember); }
+
+  .tagline {
+    margin-top: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.5em;
+    color: var(--ink-dim);
+    text-indent: 0.5em;
+  }
+
+  .badge {
+    margin-top: 36px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.5em;
+    color: var(--ember);
+    text-indent: 0.5em;
+  }
+  .headline {
+    margin-top: 12px;
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400;
+    font-size: clamp(22px, 3.4vw, 28px);
+    letter-spacing: 0.02em;
+  }
+  .subcopy {
+    margin-top: 14px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--ink-dim);
+    text-align: center;
+    max-width: 340px;
+  }
+  .subcopy strong { color: var(--ink); font-weight: 500; }
+
+  .form {
+    margin-top: 26px;
+    width: 100%;
+    max-width: 340px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .field {
+    display: flex;
+    align-items: center;
+    border: 1px solid rgba(255, 106, 26, 0.35);
+    background: rgba(8, 4, 2, 0.55);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    transition: border-color 200ms ease, background 200ms ease;
+  }
+  .field:focus-within {
+    border-color: var(--ember);
+    background: rgba(20, 8, 2, 0.7);
+  }
+  .field svg { width: 13px; height: 13px; margin-left: 14px; color: var(--ember); flex-shrink: 0; }
+  .field input {
+    flex: 1;
+    background: transparent;
+    border: none; outline: none;
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    padding: 13px 14px 13px 10px;
+    letter-spacing: 0.02em;
+  }
+  .field input::placeholder {
+    color: var(--ink-faint);
+    font-size: 12.5px;
+    letter-spacing: 0.04em;
+  }
+
+  .submit {
+    margin-top: 4px;
+    height: 44px;
+    border: none;
+    background: var(--ember);
+    color: #0a0500;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 500;
+    font-size: 11.5px;
+    letter-spacing: 0.4em;
+    text-indent: 0.4em;
+    cursor: pointer;
+    transition: background 200ms ease, transform 100ms ease, box-shadow 400ms ease;
+  }
+  .submit:hover { background: var(--ember-soft); }
+  .submit:active { transform: scale(0.985); }
+  .submit:disabled { cursor: wait; background: var(--ember-deep); }
+  .submit.is-pressed {
+    box-shadow: 0 0 50px rgba(255, 106, 26, 0.6), 0 0 100px rgba(255, 106, 26, 0.3);
+  }
+  .form-error {
+    margin-top: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: #ff5a3a;
+    min-height: 12px;
+    text-align: center;
+  }
+  .dots::after {
+    content: ''; display: inline-block; width: 1em; text-align: left;
+    animation: dots 1.2s steps(4, end) infinite;
+  }
+  @keyframes dots {
+    0% { content: ''; } 25% { content: '.'; } 50% { content: '..'; }
+    75% { content: '...'; } 100% { content: ''; }
+  }
+
+  .footer {
+    margin-top: auto;
+    padding-top: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+  .footer-cta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--ink-faint);
+  }
+  .socials { display: flex; gap: 22px; }
+  .socials a { color: var(--ink-dim); width: 16px; height: 16px; transition: color 200ms ease; }
+  .socials a:hover { color: var(--ember); }
+  .socials svg { width: 100%; height: 100%; }
+  .copyright {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    color: var(--ink-faint);
+  }
+
+  .door-window {
+    width: 100%;
+    height: clamp(220px, 36vh, 360px);
+    flex-shrink: 0;
+  }
+
+  .success {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 6;
+    background: #fff;
+    color: #0a0805;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 700ms ease;
+    padding: 24px;
+    text-align: center;
+  }
+  body[data-stage="success"] .success { opacity: 1; pointer-events: auto; }
+  .success-mark {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400;
+    font-size: clamp(40px, 9vw, 64px);
+    letter-spacing: 0.25em;
+    text-indent: 0.25em;
+    margin-bottom: 18px;
+  }
+  .success-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.4em;
+    text-indent: 0.4em;
+    color: rgba(10, 8, 5, 0.55);
+    margin-bottom: 32px;
+  }
+  .success-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.3em;
+    color: rgba(10, 8, 5, 0.4);
+    line-height: 2;
+  }
+
+  @media (max-width: 420px) {
+    .ui { padding: 36px 20px 24px; }
+    .door-window { height: clamp(200px, 32vh, 300px); }
+  }
+</style>
+</head>
+<body data-stage="initial">
+
+  <canvas id="scene"></canvas>
+  <div class="whiteout"></div>
+
+  <div class="ui">
+    <h1 class="wordmark">D<span>A</span><span class="accent">A</span>RK</h1>
+    <div class="tagline">YOU VS YOU</div>
+
+    <div class="badge">COMING SOON</div>
+    <div class="headline">The journey begins within.</div>
+    <p class="subcopy">
+      Most people fail.<br>
+      Not because they lack effort.<br>
+      Because they lack <strong>structure</strong>.
+    </p>
+
+    <form class="form" id="waitlistForm" novalidate>
+      <label class="field">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="1"/><path d="M3 7l9 6 9-6"/></svg>
+        <input type="email" name="email" id="email" placeholder="Enter your email" autocomplete="email" required>
+      </label>
+      <label class="field">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 4h3l2 5-2 1a12 12 0 0 0 6 6l1-2 5 2v3a2 2 0 0 1-2 2A17 17 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>
+        <input type="tel" name="phone" id="phone" placeholder="Enter your phone number" autocomplete="tel" required>
+      </label>
+      <button type="submit" class="submit" id="submitBtn">JOIN WAITLIST</button>
+      <div class="form-error" id="formError"></div>
+    </form>
+
+    <div class="door-window"></div>
+
+    <footer class="footer">
+      <div class="footer-cta">JOIN THE WAITLIST. BE PART OF THE FIRST.</div>
+      <div class="socials">
+        <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.8" fill="currentColor"/></svg></a>
+        <a href="#" aria-label="Twitter"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+        <a href="#" aria-label="Email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5" width="18" height="14" rx="1"/><path d="M3 7l9 6 9-6"/></svg></a>
+      </div>
+      <div class="copyright">© 2026 DAARK. ALL RIGHTS RESERVED.</div>
+    </footer>
+  </div>
+
+  <div class="success">
+    <div class="success-mark">YOU'RE IN.</div>
+    <div class="success-sub">THE JOURNEY BEGINS WITHIN.</div>
+    <div class="success-meta">
+      CHECK YOUR EMAIL.<br>
+      STAND BY FOR ACTIVATION.
+    </div>
+  </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
-const canvas = document.getElementById('canvas')
+/* =========================================================
+   CONFIG — set your endpoint
+   ========================================================= */
+const ENDPOINT = "https://YOUR-BACKEND-URL/api/waitlist";
+const REQUEST_METHOD = "POST";
+const REQUEST_HEADERS = { "Content-Type": "application/json" };
 
-const scene = new THREE.Scene()
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000)
-const renderer = new THREE.WebGLRenderer({ canvas, alpha: true })
+/* =========================================================
+   THREE.JS SCENE
+   ========================================================= */
+const canvas = document.getElementById('scene');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor(0x000000, 1);
 
-renderer.setSize(window.innerWidth, window.innerHeight)
-camera.position.z = 5
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x000000, 0.018);
 
-// ===== DEPTH FOG (adds realism) =====
-scene.fog = new THREE.FogExp2(0x000000, 0.04)
+const camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.1, 800);
+const CAM_HOME = { x: 0, y: 0, z: 22 };
+camera.position.set(CAM_HOME.x, CAM_HOME.y, CAM_HOME.z);
+camera.lookAt(0, -2, 0);
 
-// ===== STARFIELD =====
-const count = 1000
-const positions = new Float32Array(count * 3)
+/* ---------- Star field ---------- */
+const STAR_COUNT = 1400;
+const starPositions = new Float32Array(STAR_COUNT * 3);
+const starColors    = new Float32Array(STAR_COUNT * 3);
+const starSpeeds    = new Float32Array(STAR_COUNT);
 
-for (let i = 0; i < count; i++) {
-  let x = (Math.random() - 0.5) * 100
-  let y = (Math.random() - 0.5) * 100
+const TUNNEL_RADIUS = 60;
+const TUNNEL_DEPTH  = 220;
+const NEAR_CLEAR    = 4;
 
-  // clean center (focus on door)
-  if (Math.sqrt(x*x + y*y) < 8) continue
+function seedStar(i, freshDepth = false) {
+  let x, y;
+  do {
+    x = (Math.random() - 0.5) * TUNNEL_RADIUS * 2;
+    y = (Math.random() - 0.5) * TUNNEL_RADIUS * 2;
+  } while (Math.abs(x) < NEAR_CLEAR && Math.abs(y) < NEAR_CLEAR + 2);
+  const z = freshDepth ? -TUNNEL_DEPTH : (-Math.random() * TUNNEL_DEPTH);
+  starPositions[i*3]   = x;
+  starPositions[i*3+1] = y;
+  starPositions[i*3+2] = z;
 
-  positions[i * 3] = x
-  positions[i * 3 + 1] = y
-  positions[i * 3 + 2] = -Math.random() * 100
+  const r = Math.random();
+  if (r < 0.78) {
+    starColors[i*3] = 1.0; starColors[i*3+1] = 1.0; starColors[i*3+2] = 1.0;
+  } else if (r < 0.92) {
+    starColors[i*3] = 1.0; starColors[i*3+1] = 0.55; starColors[i*3+2] = 0.18;
+  } else {
+    starColors[i*3] = 0.55; starColors[i*3+1] = 0.75; starColors[i*3+2] = 1.0;
+  }
+  starSpeeds[i] = 0.5 + Math.random() * 1.2;
 }
+for (let i = 0; i < STAR_COUNT; i++) seedStar(i);
 
-const geometry = new THREE.BufferGeometry()
-geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+const starGeo = new THREE.BufferGeometry();
+starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+starGeo.setAttribute('color',    new THREE.BufferAttribute(starColors, 3));
 
-// softer cinematic stars
-const material = new THREE.PointsMaterial({
-  color: 0x9fb3ff,
-  size: 0.06,
+const starMat = new THREE.PointsMaterial({
+  size: 0.16,
+  vertexColors: true,
   transparent: true,
-  opacity: 0.7,
+  opacity: 0.95,
+  sizeAttenuation: true,
   blending: THREE.AdditiveBlending,
   depthWrite: false
-})
+});
+const stars = new THREE.Points(starGeo, starMat);
+scene.add(stars);
 
-const stars = new THREE.Points(geometry, material)
-scene.add(stars)
-
-let speed = 0.02
-
-function animate() {
-  requestAnimationFrame(animate)
-
-  const pos = geometry.attributes.position.array
-
-  for (let i = 0; i < pos.length; i += 3) {
-
-    // ===== RADIAL MOTION (THIS IS KEY) =====
-    const dx = -pos[i]
-    const dy = -pos[i + 1]
-
-    pos[i] += dx * speed * 0.02
-    pos[i + 1] += dy * speed * 0.02
-    pos[i + 2] += speed
-
-    if (pos[i + 2] > 2) {
-      pos[i] = (Math.random() - 0.5) * 100
-      pos[i + 1] = (Math.random() - 0.5) * 100
-      pos[i + 2] = -100
-    }
-  }
-
-  geometry.attributes.position.needsUpdate = true
-  renderer.render(scene, camera)
+/* ---------- Nebula haze ---------- */
+function makeHazeTexture() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 256;
+  const ctx = c.getContext('2d');
+  const g = ctx.createRadialGradient(128, 128, 10, 128, 128, 128);
+  g.addColorStop(0,   'rgba(255, 140, 60, 0.55)');
+  g.addColorStop(0.4, 'rgba(120, 80, 200, 0.18)');
+  g.addColorStop(1,   'rgba(0,0,0,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 256, 256);
+  return new THREE.CanvasTexture(c);
+}
+const hazeTex = makeHazeTexture();
+const hazeSprites = [];
+for (let i = 0; i < 14; i++) {
+  const mat = new THREE.SpriteMaterial({
+    map: hazeTex,
+    transparent: true,
+    opacity: 0.25,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false
+  });
+  if (Math.random() < 0.4) mat.color.setRGB(0.4, 0.5, 1.0);
+  const s = new THREE.Sprite(mat);
+  const r = 25 + Math.random() * 35;
+  const a = Math.random() * Math.PI * 2;
+  s.position.set(Math.cos(a) * r, Math.sin(a) * r * 0.7, -40 - Math.random() * 140);
+  const sc = 30 + Math.random() * 50;
+  s.scale.set(sc, sc, 1);
+  scene.add(s);
+  hazeSprites.push(s);
 }
 
-animate()
+/* ---------- Doorway group ---------- */
+const doorGroup = new THREE.Group();
+doorGroup.position.set(0, -3.2, -6);
+scene.add(doorGroup);
 
-// ===== INTERACTION =====
-const btn = document.getElementById("btn")
-const door = document.getElementById("door")
+const wallGeo = new THREE.PlaneGeometry(14, 10);
+const wallMat = new THREE.MeshBasicMaterial({ color: 0x0a0805 });
+const wall = new THREE.Mesh(wallGeo, wallMat);
+wall.position.set(0, 1.5, -0.2);
+doorGroup.add(wall);
 
-btn.addEventListener("click", () => {
+const spillTex = (() => {
+  const c = document.createElement('canvas');
+  c.width = c.height = 256;
+  const ctx = c.getContext('2d');
+  const g = ctx.createRadialGradient(128, 200, 5, 128, 200, 140);
+  g.addColorStop(0,   'rgba(255, 130, 40, 0.85)');
+  g.addColorStop(0.3, 'rgba(255, 80, 20, 0.35)');
+  g.addColorStop(1,   'rgba(0,0,0,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 256, 256);
+  return new THREE.CanvasTexture(c);
+})();
+const spill = new THREE.Sprite(new THREE.SpriteMaterial({
+  map: spillTex,
+  transparent: true,
+  blending: THREE.AdditiveBlending,
+  depthWrite: false,
+  opacity: 0.85
+}));
+spill.scale.set(10, 10, 1);
+spill.position.set(0, 1.2, 0.0);
+doorGroup.add(spill);
 
-  gsap.to({ val: speed }, {
-    val: 0.6,
-    duration: 1.2,
-    ease: "power3.out",
-    onUpdate: function() {
-      speed = this.targets()[0].val
-    }
+const doorGeo = new THREE.PlaneGeometry(2.2, 5.0);
+const doorMat = new THREE.MeshBasicMaterial({
+  color: new THREE.Color(0xff7a1f),
+  transparent: true,
+  opacity: 1.0
+});
+const door = new THREE.Mesh(doorGeo, doorMat);
+door.position.set(0, 1.2, 0.05);
+doorGroup.add(door);
+
+const bloomTex = (() => {
+  const c = document.createElement('canvas');
+  c.width = c.height = 256;
+  const ctx = c.getContext('2d');
+  const g = ctx.createRadialGradient(128, 128, 0, 128, 128, 128);
+  g.addColorStop(0,   'rgba(255, 200, 120, 1)');
+  g.addColorStop(0.2, 'rgba(255, 120, 40, 0.8)');
+  g.addColorStop(0.6, 'rgba(255, 60, 20, 0.2)');
+  g.addColorStop(1,   'rgba(0,0,0,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 256, 256);
+  return new THREE.CanvasTexture(c);
+})();
+const doorBloom = new THREE.Sprite(new THREE.SpriteMaterial({
+  map: bloomTex,
+  transparent: true,
+  blending: THREE.AdditiveBlending,
+  depthWrite: false,
+  opacity: 0.9
+}));
+doorBloom.scale.set(8, 9, 1);
+doorBloom.position.set(0, 1.2, 0.04);
+doorGroup.add(doorBloom);
+
+const floorGeo = new THREE.PlaneGeometry(20, 8);
+const floorMat = new THREE.MeshBasicMaterial({ color: 0x0a0604 });
+const floor = new THREE.Mesh(floorGeo, floorMat);
+floor.rotation.x = -Math.PI / 2;
+floor.position.set(0, -1.3, 2.0);
+doorGroup.add(floor);
+
+const floorSpillTex = (() => {
+  const c = document.createElement('canvas');
+  c.width = 256; c.height = 256;
+  const ctx = c.getContext('2d');
+  const g = ctx.createRadialGradient(128, 0, 5, 128, 0, 200);
+  g.addColorStop(0,   'rgba(255, 130, 40, 0.9)');
+  g.addColorStop(0.4, 'rgba(255, 60, 10, 0.3)');
+  g.addColorStop(1,   'rgba(0,0,0,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 256, 256);
+  return new THREE.CanvasTexture(c);
+})();
+const floorSpill = new THREE.Mesh(
+  new THREE.PlaneGeometry(12, 8),
+  new THREE.MeshBasicMaterial({
+    map: floorSpillTex,
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    opacity: 0.85
   })
+);
+floorSpill.rotation.x = -Math.PI / 2;
+floorSpill.position.set(0, -1.29, 2.0);
+doorGroup.add(floorSpill);
 
-  setTimeout(() => {
-    door.classList.add("success")
-  }, 500)
-})
+/* =========================================================
+   STATE
+   ========================================================= */
+const state = {
+  starSpeed: 0.05,           starSpeedTarget: 0.05,
+  doorHueR: 1.0, doorHueG: 0.48, doorHueB: 0.12,
+  doorHueTargetR: 1.0, doorHueTargetG: 0.48, doorHueTargetB: 0.12,
+  doorGlow: 1.0,             doorGlowTarget: 1.0,
+  cameraZ: CAM_HOME.z,       cameraZTarget: CAM_HOME.z,
+  hazeOpacityMul: 1.0,       hazeOpacityMulTarget: 1.0,
+};
+
+function setStage(stage) {
+  document.body.setAttribute('data-stage', stage);
+  switch (stage) {
+    case 'initial':
+      state.starSpeedTarget = 0.05;
+      state.doorGlowTarget = 1.0;
+      state.cameraZTarget = CAM_HOME.z;
+      state.hazeOpacityMulTarget = 1.0;
+      break;
+    case 'warming':
+      state.starSpeedTarget = 0.12;
+      state.doorGlowTarget = 1.25;
+      state.cameraZTarget = CAM_HOME.z - 0.5;
+      break;
+    case 'pulling':
+      state.starSpeedTarget = 0.45;
+      state.doorGlowTarget = 1.45;
+      state.cameraZTarget = CAM_HOME.z - 1.5;
+      state.hazeOpacityMulTarget = 1.4;
+      break;
+    case 'processing':
+      state.starSpeedTarget = 0.85;
+      state.doorGlowTarget = 1.9;
+      state.cameraZTarget = CAM_HOME.z - 3.5;
+      state.hazeOpacityMulTarget = 1.6;
+      break;
+    case 'flythrough':
+      state.starSpeedTarget = 2.4;
+      state.doorHueTargetR = 1.0;
+      state.doorHueTargetG = 1.0;
+      state.doorHueTargetB = 1.0;
+      state.doorGlowTarget = 4.5;
+      state.cameraZTarget  = doorGroup.position.z + 0.2;
+      state.hazeOpacityMulTarget = 0.0;
+      break;
+    case 'success':
+      state.starSpeedTarget = 0.3;
+      break;
+  }
+}
+
+/* =========================================================
+   LOOP
+   ========================================================= */
+const clock = new THREE.Clock();
+function lerp(a, b, t) { return a + (b - a) * t; }
+
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.05);
+
+  state.starSpeed         = lerp(state.starSpeed,         state.starSpeedTarget,         dt * 2.2);
+  state.doorGlow          = lerp(state.doorGlow,          state.doorGlowTarget,          dt * 2.0);
+  state.cameraZ           = lerp(state.cameraZ,           state.cameraZTarget,           dt * 1.6);
+  state.hazeOpacityMul    = lerp(state.hazeOpacityMul,    state.hazeOpacityMulTarget,    dt * 1.5);
+  state.doorHueR          = lerp(state.doorHueR,          state.doorHueTargetR,          dt * 1.8);
+  state.doorHueG          = lerp(state.doorHueG,          state.doorHueTargetG,          dt * 1.8);
+  state.doorHueB          = lerp(state.doorHueB,          state.doorHueTargetB,          dt * 1.8);
+
+  const pos = starGeo.attributes.position.array;
+  for (let i = 0; i < STAR_COUNT; i++) {
+    pos[i*3 + 2] += state.starSpeed * starSpeeds[i];
+    if (pos[i*3 + 2] > camera.position.z) {
+      seedStar(i, true);
+    }
+  }
+  starGeo.attributes.position.needsUpdate = true;
+  starMat.size = 0.16 + Math.min(state.starSpeed * 0.18, 0.5);
+
+  doorMat.color.setRGB(state.doorHueR, state.doorHueG, state.doorHueB);
+  doorBloom.material.opacity = Math.min(0.35 + state.doorGlow * 0.45, 1.0);
+  doorBloom.scale.set(6 + state.doorGlow * 2.5, 7 + state.doorGlow * 3.0, 1);
+  spill.material.opacity = Math.min(0.4 + state.doorGlow * 0.35, 1.0);
+  floorSpill.material.opacity = Math.min(0.4 + state.doorGlow * 0.35, 1.0);
+
+  hazeSprites.forEach((s, i) => {
+    s.position.z += state.starSpeed * 0.4;
+    if (s.position.z > camera.position.z) s.position.z = -180;
+    s.material.opacity = (0.18 + (i % 3) * 0.04) * state.hazeOpacityMul;
+  });
+
+  camera.position.z = state.cameraZ;
+  const t = clock.elapsedTime;
+  camera.position.x = Math.sin(t * 0.15) * 0.15;
+  camera.position.y = Math.cos(t * 0.1) * 0.1;
+  camera.lookAt(0, -2, doorGroup.position.z);
+
+  renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+/* =========================================================
+   FORM
+   ========================================================= */
+const form    = document.getElementById('waitlistForm');
+const emailEl = document.getElementById('email');
+const phoneEl = document.getElementById('phone');
+const btn     = document.getElementById('submitBtn');
+const errEl   = document.getElementById('formError');
+
+let warmed = false;
+const warm = () => {
+  if (warmed) return;
+  warmed = true;
+  setStage('warming');
+  const checkPull = () => {
+    if (emailEl.value.length >= 4 || phoneEl.value.length >= 4) {
+      setStage('pulling');
+      emailEl.removeEventListener('input', checkPull);
+      phoneEl.removeEventListener('input', checkPull);
+    }
+  };
+  emailEl.addEventListener('input', checkPull);
+  phoneEl.addEventListener('input', checkPull);
+};
+emailEl.addEventListener('focus', warm);
+phoneEl.addEventListener('focus', warm);
+
+const isEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
+const isPhone = (v) => /^[+\d][\d\s\-()]{6,}$/.test(v.trim());
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  errEl.textContent = '';
+
+  const email = emailEl.value.trim();
+  const phone = phoneEl.value.trim();
+
+  if (!isEmail(email)) { errEl.textContent = 'INVALID EMAIL'; return; }
+  if (!isPhone(phone)) { errEl.textContent = 'INVALID PHONE'; return; }
+
+  setStage('processing');
+  btn.disabled = true;
+  btn.classList.add('is-pressed');
+  btn.innerHTML = '<span class="dots">JOINING</span>';
+
+  try {
+    const res = await fetch(ENDPOINT, {
+      method: REQUEST_METHOD,
+      headers: REQUEST_HEADERS,
+      body: JSON.stringify({ email, phone })
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(text || ('STATUS ' + res.status));
+    }
+    setStage('flythrough');
+    setTimeout(() => setStage('success'), 1400);
+  } catch (err) {
+    setStage('pulling');
+    btn.disabled = false;
+    btn.classList.remove('is-pressed');
+    btn.textContent = 'JOIN WAITLIST';
+    errEl.textContent = 'SUBMISSION FAILED. RETRY.';
+    console.error('[DAARK waitlist]', err);
+  }
+});
 </script>
-<style>
-  body {
-    margin: 0;
-    overflow: hidden;
-    background: black;
-  }
-
-  #canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-  }
-
-  .center-ui {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: white;
-    text-align: center;
-    font-family: sans-serif;
-  }
-
-  .door {
-    width: 80px;
-    height: 160px;
-    margin: 20px auto;
-    background: #FF3B1F;
-    box-shadow: 0 0 40px rgba(255, 59, 31, 0.6);
-    transition: all 1.2s ease;
-  }
-
-  .door.success {
-    background: #FFF3D6;
-    box-shadow: 0 0 80px rgba(255, 243, 214, 0.8);
-  }
-
-  button {
-    padding: 10px 20px;
-    background: #FF3B1F;
-    border: none;
-    color: white;
-    cursor: pointer;
-  }
-
-  /* ===== ADD THIS PART BELOW ===== */
-
-  body::after {
-    content: "";
-    position: fixed;
-    inset: 0;
-    background: radial-gradient(circle, transparent 40%, rgba(0,0,0,0.7));
-    pointer-events: none;
-  }
-
-  body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    background-image: url("https://grainy-gradients.vercel.app/noise.svg");
-    opacity: 0.05;
-    pointer-events: none;
-  }
-
-  .door::before {
-    content: "";
-    position: absolute;
-    inset: -80px;
-    background: radial-gradient(circle, rgba(255,100,40,0.3), transparent 70%);
-    filter: blur(40px);
-  }
-
-</style>
+</body>
+</html>
