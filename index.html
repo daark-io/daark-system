@@ -12,9 +12,9 @@
     --ink: #f4f1ea;
     --ink-dim: rgba(244, 241, 234, 0.6);
     --ink-faint: rgba(244, 241, 234, 0.3);
-    --ember: #ff6a1a;
-    --ember-soft: #ff8a3d;
-    --ember-deep: #c84a0a;
+    --ember: #ff4714;            /* hot iron — R:1.0 G:0.28 B:0.08 */
+    --ember-soft: #ff6a3a;
+    --ember-deep: #c43208;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; }
@@ -28,21 +28,20 @@
   }
 
   #scene {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    display: block;
+    position: fixed; inset: 0;
+    z-index: 0; display: block;
   }
 
+  /* whiteout used for the brief flash on success */
   .whiteout {
     position: fixed; inset: 0;
     background: #fff;
     z-index: 5;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 1100ms cubic-bezier(0.7, 0, 0.84, 0);
+    transition: opacity 350ms cubic-bezier(0.7, 0, 0.84, 0);
   }
-  body[data-stage="flythrough"] .whiteout { opacity: 1; transition-duration: 900ms; }
+  body[data-stage="flash"] .whiteout { opacity: 1; transition-duration: 220ms; }
 
   .ui {
     position: relative;
@@ -55,7 +54,8 @@
     transition: opacity 600ms ease, transform 800ms cubic-bezier(0.65, 0, 0.35, 1);
   }
   body[data-stage="processing"] .ui { transform: translateY(-6px); }
-  body[data-stage="flythrough"] .ui { opacity: 0; transform: translateY(-30px); pointer-events: none; }
+  body[data-stage="flash"] .ui { opacity: 0; transform: translateY(-12px); pointer-events: none; }
+  body[data-stage="success"] .ui { opacity: 0; pointer-events: none; }
 
   .wordmark {
     font-family: 'Cormorant Garamond', serif;
@@ -66,16 +66,19 @@
     line-height: 1;
     user-select: none;
   }
-  .wordmark .accent { color: var(--ember); }
+  .wordmark .a-red   { color: var(--ember); }
+  .wordmark .a-white { color: var(--ink); }
 
   .tagline {
     margin-top: 14px;
     font-family: 'JetBrains Mono', monospace;
     font-size: 11px;
     letter-spacing: 0.5em;
-    color: var(--ink-dim);
     text-indent: 0.5em;
   }
+  .tagline .you-red   { color: var(--ember); }
+  .tagline .you-white { color: var(--ink); }
+  .tagline .vs        { color: var(--ink-dim); margin: 0 0.4em; }
 
   .badge {
     margin-top: 36px;
@@ -113,7 +116,7 @@
   .field {
     display: flex;
     align-items: center;
-    border: 1px solid rgba(255, 106, 26, 0.35);
+    border: 1px solid rgba(255, 71, 20, 0.4);
     background: rgba(8, 4, 2, 0.55);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
@@ -125,9 +128,7 @@
   }
   .field svg { width: 13px; height: 13px; margin-left: 14px; color: var(--ember); flex-shrink: 0; }
   .field input {
-    flex: 1;
-    background: transparent;
-    border: none; outline: none;
+    flex: 1; background: transparent; border: none; outline: none;
     color: var(--ink);
     font-family: 'Inter', sans-serif;
     font-size: 13px;
@@ -158,7 +159,7 @@
   .submit:active { transform: scale(0.985); }
   .submit:disabled { cursor: wait; background: var(--ember-deep); }
   .submit.is-pressed {
-    box-shadow: 0 0 50px rgba(255, 106, 26, 0.6), 0 0 100px rgba(255, 106, 26, 0.3);
+    box-shadow: 0 0 50px rgba(255, 71, 20, 0.65), 0 0 100px rgba(255, 71, 20, 0.35);
   }
   .form-error {
     margin-top: 6px;
@@ -176,6 +177,40 @@
   @keyframes dots {
     0% { content: ''; } 25% { content: '.'; } 50% { content: '..'; }
     75% { content: '...'; } 100% { content: ''; }
+  }
+
+  /* live count */
+  .live-count {
+    margin-top: 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    opacity: 0;
+    transition: opacity 600ms ease;
+  }
+  .live-count.is-ready { opacity: 1; }
+  .live-count-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400;
+    font-size: 28px;
+    color: var(--ink);
+    letter-spacing: 0.04em;
+    line-height: 1;
+  }
+  .live-count-pulse {
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--ember);
+    margin-right: 8px;
+    box-shadow: 0 0 10px var(--ember);
+    animation: pulse 1.8s ease-in-out infinite;
+    vertical-align: middle;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.4; transform: scale(0.85); }
+    50%      { opacity: 1.0; transform: scale(1.15); }
   }
 
   .footer {
@@ -209,50 +244,111 @@
     flex-shrink: 0;
   }
 
-  .success {
+  /* ---------- SUCCESS UI (mirrors home layout, swaps content) ---------- */
+  .success-ui {
     position: fixed;
     inset: 0;
+    z-index: 4;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    z-index: 6;
-    background: #fff;
-    color: #0a0805;
+    padding: 56px 24px 36px;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 700ms ease;
-    padding: 24px;
+    transition: opacity 800ms ease 200ms;
     text-align: center;
   }
-  body[data-stage="success"] .success { opacity: 1; pointer-events: auto; }
-  .success-mark {
+  body[data-stage="success"] .success-ui {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .success-wordmark {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(38px, 7.5vw, 64px);
+    letter-spacing: 0.18em;
+    text-indent: 0.18em;
+    line-height: 1.1;
+    color: var(--ink);
+    user-select: none;
+  }
+  .success-wordmark .glow {
+    color: var(--ink);
+    text-shadow:
+      0 0 30px rgba(255, 235, 200, 0.55),
+      0 0 60px rgba(255, 200, 140, 0.35);
+  }
+  .success-tagline {
+    margin-top: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.5em;
+    text-indent: 0.5em;
+    color: var(--ink-dim);
+  }
+  .success-id {
+    margin-top: 36px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 18px;
+    border: 1px solid rgba(255, 71, 20, 0.5);
+    background: rgba(20, 8, 2, 0.5);
+    backdrop-filter: blur(4px);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    letter-spacing: 0.4em;
+    color: var(--ember);
+    text-indent: 0.4em;
+  }
+  .success-id .label {
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    color: var(--ink-faint);
+    text-indent: 0.3em;
+  }
+  .success-headline {
+    margin-top: 28px;
     font-family: 'Cormorant Garamond', serif;
     font-weight: 400;
-    font-size: clamp(40px, 9vw, 64px);
-    letter-spacing: 0.25em;
-    text-indent: 0.25em;
-    margin-bottom: 18px;
+    font-size: clamp(22px, 3.4vw, 28px);
+    letter-spacing: 0.02em;
+    color: var(--ink);
   }
   .success-sub {
+    margin-top: 14px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--ink-dim);
+    max-width: 340px;
+  }
+  .success-back {
+    margin-top: 36px;
+    height: 42px;
+    padding: 0 32px;
+    border: 1px solid rgba(244, 241, 234, 0.35);
+    background: transparent;
+    color: var(--ink);
     font-family: 'JetBrains Mono', monospace;
-    font-size: 10.5px;
+    font-size: 11px;
     letter-spacing: 0.4em;
     text-indent: 0.4em;
-    color: rgba(10, 8, 5, 0.55);
-    margin-bottom: 32px;
+    cursor: pointer;
+    transition: border-color 200ms ease, color 200ms ease, background 200ms ease;
   }
-  .success-meta {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9.5px;
-    letter-spacing: 0.3em;
-    color: rgba(10, 8, 5, 0.4);
-    line-height: 2;
+  .success-back:hover {
+    border-color: var(--ink);
+    background: rgba(244, 241, 234, 0.05);
+  }
+  .success-spacer {
+    width: 100%;
+    height: clamp(220px, 36vh, 360px);
+    flex-shrink: 0;
   }
 
   @media (max-width: 420px) {
-    .ui { padding: 36px 20px 24px; }
-    .door-window { height: clamp(200px, 32vh, 300px); }
+    .ui, .success-ui { padding: 36px 20px 24px; }
+    .door-window, .success-spacer { height: clamp(200px, 32vh, 300px); }
   }
 </style>
 </head>
@@ -261,9 +357,10 @@
   <canvas id="scene"></canvas>
   <div class="whiteout"></div>
 
+  <!-- HOME UI -->
   <div class="ui">
-    <h1 class="wordmark">D<span>A</span><span class="accent">A</span>RK</h1>
-    <div class="tagline">YOU VS YOU</div>
+    <h1 class="wordmark">D<span class="a-red">A</span><span class="a-white">A</span>RK</h1>
+    <div class="tagline"><span class="you-red">YOU</span><span class="vs">VS</span><span class="you-white">YOU</span></div>
 
     <div class="badge">COMING SOON</div>
     <div class="headline">The journey begins within.</div>
@@ -286,6 +383,10 @@
       <div class="form-error" id="formError"></div>
     </form>
 
+    <div class="live-count" id="liveCount">
+      <div class="live-count-num"><span class="live-count-pulse"></span><span id="liveCountNum">0</span></div>
+    </div>
+
     <div class="door-window"></div>
 
     <footer class="footer">
@@ -299,23 +400,34 @@
     </footer>
   </div>
 
-  <div class="success">
-    <div class="success-mark">YOU'RE IN.</div>
-    <div class="success-sub">THE JOURNEY BEGINS WITHIN.</div>
-    <div class="success-meta">
-      CHECK YOUR EMAIL.<br>
-      STAND BY FOR ACTIVATION.
+  <!-- SUCCESS UI — mirrors home layout, content swapped -->
+  <div class="success-ui">
+    <h1 class="success-wordmark"><span class="glow">YOU'RE THE LIGHT.</span></h1>
+    <div class="success-tagline">THE COLD MIRROR HAS SEEN YOU</div>
+
+    <div class="success-id">
+      <span class="label">REG</span>
+      <span id="successIdValue">V01/IN/0001</span>
     </div>
+    <div class="success-headline">The journey begins within.</div>
+    <p class="success-sub">
+      Confirmation sent to your email.<br>
+      Stand by for activation.
+    </p>
+    <button class="success-back" id="backHome">BACK TO HOME</button>
+
+    <div class="success-spacer"></div>
   </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 /* =========================================================
-   CONFIG — set your endpoint
+   CONFIG — fill these in
    ========================================================= */
-const ENDPOINT = "https://YOUR-BACKEND-URL/api/waitlist";
-const REQUEST_METHOD = "POST";
-const REQUEST_HEADERS = { "Content-Type": "application/json" };
+const N8N_WEBHOOK_URL    = "https://YOUR-N8N-INSTANCE/webhook/daark-waitlist";  // <-- REPLACE
+const SUPABASE_URL       = "https://YOUR-PROJECT.supabase.co";                  // <-- REPLACE
+const SUPABASE_ANON_KEY  = "YOUR_PUBLIC_ANON_KEY";                              // <-- REPLACE
+const SUPABASE_TABLE     = "registration";
 
 /* =========================================================
    THREE.JS SCENE
@@ -334,8 +446,8 @@ const CAM_HOME = { x: 0, y: 0, z: 22 };
 camera.position.set(CAM_HOME.x, CAM_HOME.y, CAM_HOME.z);
 camera.lookAt(0, -2, 0);
 
-/* ---------- Star field ---------- */
-const STAR_COUNT = 1400;
+/* ---------- Star field with tunnel collapse ---------- */
+const STAR_COUNT = 900;
 const starPositions = new Float32Array(STAR_COUNT * 3);
 const starColors    = new Float32Array(STAR_COUNT * 3);
 const starSpeeds    = new Float32Array(STAR_COUNT);
@@ -359,7 +471,8 @@ function seedStar(i, freshDepth = false) {
   if (r < 0.78) {
     starColors[i*3] = 1.0; starColors[i*3+1] = 1.0; starColors[i*3+2] = 1.0;
   } else if (r < 0.92) {
-    starColors[i*3] = 1.0; starColors[i*3+1] = 0.55; starColors[i*3+2] = 0.18;
+    // hot iron tint
+    starColors[i*3] = 1.0; starColors[i*3+1] = 0.4; starColors[i*3+2] = 0.15;
   } else {
     starColors[i*3] = 0.55; starColors[i*3+1] = 0.75; starColors[i*3+2] = 1.0;
   }
@@ -380,8 +493,7 @@ const starMat = new THREE.PointsMaterial({
   blending: THREE.AdditiveBlending,
   depthWrite: false
 });
-const stars = new THREE.Points(starGeo, starMat);
-scene.add(stars);
+scene.add(new THREE.Points(starGeo, starMat));
 
 /* ---------- Nebula haze ---------- */
 function makeHazeTexture() {
@@ -389,7 +501,7 @@ function makeHazeTexture() {
   c.width = c.height = 256;
   const ctx = c.getContext('2d');
   const g = ctx.createRadialGradient(128, 128, 10, 128, 128, 128);
-  g.addColorStop(0,   'rgba(255, 140, 60, 0.55)');
+  g.addColorStop(0,   'rgba(255, 90, 30, 0.55)');
   g.addColorStop(0.4, 'rgba(120, 80, 200, 0.18)');
   g.addColorStop(1,   'rgba(0,0,0,0)');
   ctx.fillStyle = g;
@@ -398,11 +510,11 @@ function makeHazeTexture() {
 }
 const hazeTex = makeHazeTexture();
 const hazeSprites = [];
-for (let i = 0; i < 14; i++) {
+for (let i = 0; i < 12; i++) {
   const mat = new THREE.SpriteMaterial({
     map: hazeTex,
     transparent: true,
-    opacity: 0.25,
+    opacity: 0.22,
     blending: THREE.AdditiveBlending,
     depthWrite: false
   });
@@ -417,102 +529,126 @@ for (let i = 0; i < 14; i++) {
   hazeSprites.push(s);
 }
 
-/* ---------- Doorway group ---------- */
+/* ---------- Doorway ---------- */
 const doorGroup = new THREE.Group();
 doorGroup.position.set(0, -3.2, -6);
 scene.add(doorGroup);
 
-const wallGeo = new THREE.PlaneGeometry(14, 10);
-const wallMat = new THREE.MeshBasicMaterial({ color: 0x0a0805 });
-const wall = new THREE.Mesh(wallGeo, wallMat);
+// Back wall
+const wall = new THREE.Mesh(
+  new THREE.PlaneGeometry(14, 10),
+  new THREE.MeshBasicMaterial({ color: 0x080604 })
+);
 wall.position.set(0, 1.5, -0.2);
 doorGroup.add(wall);
 
+// Side jambs (recessed feel)
+const jambMat = new THREE.MeshBasicMaterial({ color: 0x050302 });
+const leftJamb = new THREE.Mesh(new THREE.PlaneGeometry(0.4, 5.4), jambMat);
+leftJamb.position.set(-1.25, 1.2, 0.06);
+doorGroup.add(leftJamb);
+const rightJamb = new THREE.Mesh(new THREE.PlaneGeometry(0.4, 5.4), jambMat);
+rightJamb.position.set(1.25, 1.2, 0.06);
+doorGroup.add(rightJamb);
+
+// Top jamb
+const topJamb = new THREE.Mesh(new THREE.PlaneGeometry(2.9, 0.35), jambMat);
+topJamb.position.set(0, 3.85, 0.06);
+doorGroup.add(topJamb);
+
+// Light spill on wall (additive sprite around door)
 const spillTex = (() => {
   const c = document.createElement('canvas');
   c.width = c.height = 256;
   const ctx = c.getContext('2d');
   const g = ctx.createRadialGradient(128, 200, 5, 128, 200, 140);
-  g.addColorStop(0,   'rgba(255, 130, 40, 0.85)');
-  g.addColorStop(0.3, 'rgba(255, 80, 20, 0.35)');
+  g.addColorStop(0,   'rgba(255, 90, 35, 0.95)');
+  g.addColorStop(0.3, 'rgba(255, 50, 15, 0.4)');
   g.addColorStop(1,   'rgba(0,0,0,0)');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 256, 256);
   return new THREE.CanvasTexture(c);
 })();
-const spill = new THREE.Sprite(new THREE.SpriteMaterial({
+const spillMat = new THREE.SpriteMaterial({
   map: spillTex,
   transparent: true,
   blending: THREE.AdditiveBlending,
   depthWrite: false,
   opacity: 0.85
-}));
-spill.scale.set(10, 10, 1);
+});
+const spill = new THREE.Sprite(spillMat);
+spill.scale.set(11, 11, 1);
 spill.position.set(0, 1.2, 0.0);
 doorGroup.add(spill);
 
-const doorGeo = new THREE.PlaneGeometry(2.2, 5.0);
+// THE DOOR — emissive plane
 const doorMat = new THREE.MeshBasicMaterial({
-  color: new THREE.Color(0xff7a1f),
+  color: new THREE.Color(1.0, 0.28, 0.08),
   transparent: true,
   opacity: 1.0
 });
-const door = new THREE.Mesh(doorGeo, doorMat);
-door.position.set(0, 1.2, 0.05);
+const door = new THREE.Mesh(new THREE.PlaneGeometry(2.1, 4.9), doorMat);
+door.position.set(0, 1.2, 0.07);
 doorGroup.add(door);
 
+// Door bloom halo
 const bloomTex = (() => {
   const c = document.createElement('canvas');
   c.width = c.height = 256;
   const ctx = c.getContext('2d');
   const g = ctx.createRadialGradient(128, 128, 0, 128, 128, 128);
-  g.addColorStop(0,   'rgba(255, 200, 120, 1)');
-  g.addColorStop(0.2, 'rgba(255, 120, 40, 0.8)');
-  g.addColorStop(0.6, 'rgba(255, 60, 20, 0.2)');
+  g.addColorStop(0,   'rgba(255, 200, 130, 1)');
+  g.addColorStop(0.2, 'rgba(255, 110, 40, 0.85)');
+  g.addColorStop(0.6, 'rgba(255, 50, 10, 0.22)');
   g.addColorStop(1,   'rgba(0,0,0,0)');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 256, 256);
   return new THREE.CanvasTexture(c);
 })();
-const doorBloom = new THREE.Sprite(new THREE.SpriteMaterial({
+const doorBloomMat = new THREE.SpriteMaterial({
   map: bloomTex,
   transparent: true,
   blending: THREE.AdditiveBlending,
   depthWrite: false,
   opacity: 0.9
-}));
+});
+const doorBloom = new THREE.Sprite(doorBloomMat);
 doorBloom.scale.set(8, 9, 1);
 doorBloom.position.set(0, 1.2, 0.04);
 doorGroup.add(doorBloom);
 
-const floorGeo = new THREE.PlaneGeometry(20, 8);
-const floorMat = new THREE.MeshBasicMaterial({ color: 0x0a0604 });
-const floor = new THREE.Mesh(floorGeo, floorMat);
+// Floor
+const floor = new THREE.Mesh(
+  new THREE.PlaneGeometry(20, 8),
+  new THREE.MeshBasicMaterial({ color: 0x0a0604 })
+);
 floor.rotation.x = -Math.PI / 2;
 floor.position.set(0, -1.3, 2.0);
 doorGroup.add(floor);
 
+// Floor spill
 const floorSpillTex = (() => {
   const c = document.createElement('canvas');
   c.width = 256; c.height = 256;
   const ctx = c.getContext('2d');
-  const g = ctx.createRadialGradient(128, 0, 5, 128, 0, 200);
-  g.addColorStop(0,   'rgba(255, 130, 40, 0.9)');
-  g.addColorStop(0.4, 'rgba(255, 60, 10, 0.3)');
+  const g = ctx.createRadialGradient(128, 0, 5, 128, 0, 220);
+  g.addColorStop(0,   'rgba(255, 90, 30, 0.95)');
+  g.addColorStop(0.3, 'rgba(255, 60, 15, 0.5)');
   g.addColorStop(1,   'rgba(0,0,0,0)');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 256, 256);
   return new THREE.CanvasTexture(c);
 })();
+const floorSpillMat = new THREE.MeshBasicMaterial({
+  map: floorSpillTex,
+  transparent: true,
+  blending: THREE.AdditiveBlending,
+  depthWrite: false,
+  opacity: 0.9
+});
 const floorSpill = new THREE.Mesh(
-  new THREE.PlaneGeometry(12, 8),
-  new THREE.MeshBasicMaterial({
-    map: floorSpillTex,
-    transparent: true,
-    blending: THREE.AdditiveBlending,
-    depthWrite: false,
-    opacity: 0.85
-  })
+  new THREE.PlaneGeometry(13, 9),
+  floorSpillMat
 );
 floorSpill.rotation.x = -Math.PI / 2;
 floorSpill.position.set(0, -1.29, 2.0);
@@ -523,8 +659,8 @@ doorGroup.add(floorSpill);
    ========================================================= */
 const state = {
   starSpeed: 0.05,           starSpeedTarget: 0.05,
-  doorHueR: 1.0, doorHueG: 0.48, doorHueB: 0.12,
-  doorHueTargetR: 1.0, doorHueTargetG: 0.48, doorHueTargetB: 0.12,
+  doorHueR: 1.0, doorHueG: 0.28, doorHueB: 0.08,
+  doorHueTargetR: 1.0, doorHueTargetG: 0.28, doorHueTargetB: 0.08,
   doorGlow: 1.0,             doorGlowTarget: 1.0,
   cameraZ: CAM_HOME.z,       cameraZTarget: CAM_HOME.z,
   hazeOpacityMul: 1.0,       hazeOpacityMulTarget: 1.0,
@@ -538,6 +674,7 @@ function setStage(stage) {
       state.doorGlowTarget = 1.0;
       state.cameraZTarget = CAM_HOME.z;
       state.hazeOpacityMulTarget = 1.0;
+      state.doorHueTargetR = 1.0; state.doorHueTargetG = 0.28; state.doorHueTargetB = 0.08;
       break;
     case 'warming':
       state.starSpeedTarget = 0.12;
@@ -551,28 +688,32 @@ function setStage(stage) {
       state.hazeOpacityMulTarget = 1.4;
       break;
     case 'processing':
-      state.starSpeedTarget = 0.85;
-      state.doorGlowTarget = 1.9;
-      state.cameraZTarget = CAM_HOME.z - 3.5;
+      state.starSpeedTarget = 0.95;
+      state.doorGlowTarget = 2.1;
+      state.cameraZTarget = CAM_HOME.z - 4.0;
       state.hazeOpacityMulTarget = 1.6;
       break;
-    case 'flythrough':
+    case 'flash':
+      // brief moment where stars peak, door blows out, whiteout fades in
       state.starSpeedTarget = 2.4;
-      state.doorHueTargetR = 1.0;
-      state.doorHueTargetG = 1.0;
-      state.doorHueTargetB = 1.0;
-      state.doorGlowTarget = 4.5;
-      state.cameraZTarget  = doorGroup.position.z + 0.2;
+      state.doorGlowTarget = 5.0;
+      state.cameraZTarget = doorGroup.position.z - 0.8;
+      state.doorHueTargetR = 1.0; state.doorHueTargetG = 0.95; state.doorHueTargetB = 0.85;
       state.hazeOpacityMulTarget = 0.0;
       break;
     case 'success':
-      state.starSpeedTarget = 0.3;
+      // settled dark scene with white-cream door
+      state.starSpeedTarget = 0.18;
+      state.doorGlowTarget = 1.6;
+      state.cameraZTarget = CAM_HOME.z - 1.0;
+      state.hazeOpacityMulTarget = 0.6;
+      state.doorHueTargetR = 1.0; state.doorHueTargetG = 0.96; state.doorHueTargetB = 0.88;
       break;
   }
 }
 
 /* =========================================================
-   LOOP
+   ANIMATION LOOP
    ========================================================= */
 const clock = new THREE.Clock();
 function lerp(a, b, t) { return a + (b - a) * t; }
@@ -589,28 +730,47 @@ function animate() {
   state.doorHueG          = lerp(state.doorHueG,          state.doorHueTargetG,          dt * 1.8);
   state.doorHueB          = lerp(state.doorHueB,          state.doorHueTargetB,          dt * 1.8);
 
+  // Star motion + tunnel collapse (key realism upgrade)
   const pos = starGeo.attributes.position.array;
+  const collapse = 1 - Math.min(state.starSpeed * 0.005, 0.012); // pull toward center as speed climbs
   for (let i = 0; i < STAR_COUNT; i++) {
-    pos[i*3 + 2] += state.starSpeed * starSpeeds[i];
+    pos[i*3 + 2] += state.starSpeed * starSpeeds[i] * 1.8;
+    pos[i*3]     *= collapse;
+    pos[i*3 + 1] *= collapse;
     if (pos[i*3 + 2] > camera.position.z) {
       seedStar(i, true);
     }
   }
   starGeo.attributes.position.needsUpdate = true;
-  starMat.size = 0.16 + Math.min(state.starSpeed * 0.18, 0.5);
+  starMat.size = 0.16 + Math.min(state.starSpeed * 0.22, 0.55);
 
+  // Door
   doorMat.color.setRGB(state.doorHueR, state.doorHueG, state.doorHueB);
-  doorBloom.material.opacity = Math.min(0.35 + state.doorGlow * 0.45, 1.0);
-  doorBloom.scale.set(6 + state.doorGlow * 2.5, 7 + state.doorGlow * 3.0, 1);
-  spill.material.opacity = Math.min(0.4 + state.doorGlow * 0.35, 1.0);
-  floorSpill.material.opacity = Math.min(0.4 + state.doorGlow * 0.35, 1.0);
+  doorBloomMat.opacity = Math.min(0.35 + state.doorGlow * 0.5, 1.0);
+  doorBloom.scale.set(7 + state.doorGlow * 3.5, 9 + state.doorGlow * 4.5, 1);
+  spillMat.opacity = Math.min(0.45 + state.doorGlow * 0.4, 1.0);
+  floorSpillMat.opacity = Math.min(0.6 + state.doorGlow * 0.5, 1.0);
 
+  // Tint bloom + spill toward white as door turns white-cream
+  const heat = state.doorHueG; // proxy: 0.28 = red, ~0.96 = cream
+  if (heat > 0.5) {
+    doorBloomMat.color.setRGB(1.0, 0.95, 0.85);
+    spillMat.color.setRGB(1.0, 0.92, 0.8);
+    floorSpillMat.color.setRGB(1.0, 0.9, 0.75);
+  } else {
+    doorBloomMat.color.setRGB(1.0, 0.55, 0.25);
+    spillMat.color.setRGB(1.0, 0.45, 0.18);
+    floorSpillMat.color.setRGB(1.0, 0.4, 0.15);
+  }
+
+  // Haze drift
   hazeSprites.forEach((s, i) => {
     s.position.z += state.starSpeed * 0.4;
     if (s.position.z > camera.position.z) s.position.z = -180;
     s.material.opacity = (0.18 + (i % 3) * 0.04) * state.hazeOpacityMul;
   });
 
+  // Camera
   camera.position.z = state.cameraZ;
   const t = clock.elapsedTime;
   camera.position.x = Math.sin(t * 0.15) * 0.15;
@@ -628,13 +788,15 @@ window.addEventListener('resize', () => {
 });
 
 /* =========================================================
-   FORM
+   FORM LOGIC
    ========================================================= */
 const form    = document.getElementById('waitlistForm');
 const emailEl = document.getElementById('email');
 const phoneEl = document.getElementById('phone');
 const btn     = document.getElementById('submitBtn');
 const errEl   = document.getElementById('formError');
+const successIdEl = document.getElementById('successIdValue');
+const backBtn = document.getElementById('backHome');
 
 let warmed = false;
 const warm = () => {
@@ -673,17 +835,25 @@ form.addEventListener('submit', async (e) => {
   btn.innerHTML = '<span class="dots">JOINING</span>';
 
   try {
-    const res = await fetch(ENDPOINT, {
-      method: REQUEST_METHOD,
-      headers: REQUEST_HEADERS,
+    const res = await fetch(N8N_WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, phone })
     });
+
     if (!res.ok) {
       const text = await res.text().catch(() => '');
       throw new Error(text || ('STATUS ' + res.status));
     }
-    setStage('flythrough');
-    setTimeout(() => setStage('success'), 1400);
+
+    const data = await res.json().catch(() => ({}));
+    const uniqueId = data.unique_id || data.uniqueId || 'V01/IN/----';
+    successIdEl.textContent = uniqueId;
+
+    // Brief flash → settle into dark success scene
+    setStage('flash');
+    setTimeout(() => setStage('success'), 600);
+
   } catch (err) {
     setStage('pulling');
     btn.disabled = false;
@@ -693,6 +863,71 @@ form.addEventListener('submit', async (e) => {
     console.error('[DAARK waitlist]', err);
   }
 });
+
+backBtn.addEventListener('click', () => {
+  // Reset form + scene back to initial state without reload
+  emailEl.value = '';
+  phoneEl.value = '';
+  btn.disabled = false;
+  btn.classList.remove('is-pressed');
+  btn.textContent = 'JOIN WAITLIST';
+  errEl.textContent = '';
+  warmed = false;
+  setStage('initial');
+});
+
+/* =========================================================
+   LIVE COUNT — direct query to Supabase REST
+   Uses HEAD + Prefer: count=exact, reads count from header
+   ========================================================= */
+async function fetchLiveCount() {
+  if (!SUPABASE_URL || SUPABASE_URL.includes('YOUR-PROJECT')) {
+    // Config not set — show placeholder so you can see layout
+    animateCount(0);
+    return;
+  }
+  try {
+    const url = `${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}?select=*`;
+    const res = await fetch(url, {
+      method: 'HEAD',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Prefer': 'count=exact',
+        'Range-Unit': 'items',
+        'Range': '0-0'
+      }
+    });
+    // Supabase returns Content-Range like "0-0/247"
+    const range = res.headers.get('content-range') || '';
+    const total = parseInt(range.split('/')[1], 10);
+    animateCount(isNaN(total) ? 0 : total);
+  } catch (err) {
+    console.error('[DAARK live count]', err);
+    animateCount(0);
+  }
+}
+
+function animateCount(target) {
+  const wrap = document.getElementById('liveCount');
+  const numEl = document.getElementById('liveCountNum');
+  wrap.classList.add('is-ready');
+
+  const duration = 1400;
+  const start = performance.now();
+  const startVal = 0;
+  const easeOut = (t) => 1 - Math.pow(1 - t, 3);
+
+  function tick(now) {
+    const t = Math.min((now - start) / duration, 1);
+    const v = Math.round(startVal + (target - startVal) * easeOut(t));
+    numEl.textContent = v.toLocaleString();
+    if (t < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+fetchLiveCount();
 </script>
 </body>
 </html>
