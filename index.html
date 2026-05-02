@@ -7,6 +7,7 @@
 <meta name="description" content="No noise. No shortcuts. A discipline system." />
 <meta property="og:title" content="DAARK — You vs You." />
 <meta property="og:description" content="No noise. No shortcuts." />
+<meta property="og:image" content="/door.png" />
 <meta name="theme-color" content="#000000" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -21,8 +22,8 @@
     --muted-2: #a8a8a8;
     --red: #ff2b1a;
     --cream: #f1ead8;
-    --warm: #ffa340;
-    --warm-bright: #ffd9a8;
+    --warm: #ffb273;
+    --bright: #fffaef;
     --line-2: rgba(255,255,255,0.22);
   }
   
@@ -36,129 +37,152 @@
   
   body { min-height: 100vh; position: relative; }
   
-  /* === STARFIELD BACKGROUND === */
-  .starfield {
+  /* ========== BACKGROUND DOOR IMAGE ========== */
+  .bg-image {
     position: fixed;
     inset: 0;
+    width: 100%;
+    height: 100vh;
+    background-image: url('door.png');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
     z-index: 0;
-    background: 
-      radial-gradient(ellipse at 75% 60%, rgba(40,20,8,0.4) 0%, transparent 50%),
-      radial-gradient(ellipse at center, #050505 0%, #000 70%);
-    overflow: hidden;
+    transition: filter 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+    filter: brightness(0.9) saturate(1);
   }
   
-  .star {
-    position: absolute;
-    background: #fff;
-    border-radius: 50%;
-    animation: twinkle var(--dur, 4s) ease-in-out infinite;
-    animation-delay: var(--delay, 0s);
+  body.submit-active .bg-image {
+    filter: brightness(1.15) saturate(1.15);
   }
   
-  @keyframes twinkle {
-    0%, 100% { opacity: var(--max-op, 0.8); }
-    50% { opacity: 0.15; }
-  }
-  
-  /* Hyperspace stars container */
-  .hyperspace {
+  /* Subtle dark overlay on left for text readability */
+  .bg-overlay {
     position: fixed;
     inset: 0;
     z-index: 1;
-    overflow: hidden;
+    background: linear-gradient(90deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.4) 30%, rgba(0,0,0,0.05) 55%, rgba(0,0,0,0) 75%);
     pointer-events: none;
   }
+  
+  /* ========== DOOR GLOW OVERLAY ========== 
+     The door in the image is approximately at:
+     - horizontal: ~52% from left
+     - vertical: ~50% from top (centered)
+     - door dimensions roughly 4% wide x 22% tall on desktop
+  */
+  .door-glow {
+    position: fixed;
+    top: 50%;
+    left: 52%;
+    transform: translate(-50%, -50%);
+    width: 90px;
+    height: 320px;
+    z-index: 2;
+    pointer-events: none;
+    background: radial-gradient(ellipse at center, 
+      rgba(255, 178, 115, 0.3) 0%, 
+      rgba(255, 140, 50, 0.15) 30%, 
+      transparent 70%);
+    filter: blur(20px);
+    opacity: 0.6;
+    transition: all 1.8s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: doorBreathe 5s ease-in-out infinite;
+  }
+  
+  @keyframes doorBreathe {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 0.85; }
+  }
+  
+  /* On submit: door floods bright cream/white */
+  body.submit-active .door-glow {
+    background: radial-gradient(ellipse at center, 
+      rgba(255, 250, 239, 1) 0%, 
+      rgba(255, 220, 170, 0.85) 25%, 
+      rgba(255, 178, 115, 0.5) 50%, 
+      transparent 75%);
+    filter: blur(40px);
+    opacity: 1;
+    width: 240px;
+    height: 600px;
+    animation: doorBurst 2s ease-out forwards;
+  }
+  
+  @keyframes doorBurst {
+    0% { width: 90px; height: 320px; opacity: 0.6; }
+    50% { width: 350px; height: 800px; opacity: 1; filter: blur(60px); }
+    100% { width: 240px; height: 600px; opacity: 1; filter: blur(40px); }
+  }
+  
+  /* Outer halo around the door area on submit */
+  .door-halo {
+    position: fixed;
+    top: 50%;
+    left: 52%;
+    transform: translate(-50%, -50%);
+    width: 0;
+    height: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: radial-gradient(circle, 
+      rgba(255, 220, 170, 0.4) 0%, 
+      rgba(255, 178, 115, 0.15) 30%, 
+      transparent 60%);
+    filter: blur(80px);
+    opacity: 0;
+    transition: all 2s ease-out;
+  }
+  
+  body.submit-active .door-halo {
+    width: 1200px;
+    height: 1200px;
+    opacity: 0.6;
+  }
+  
+  /* ========== FILM GRAIN ========== */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: 
+      repeating-linear-gradient(0deg, transparent 0, transparent 2px, rgba(255,255,255,0.012) 2px, rgba(255,255,255,0.012) 3px);
+    pointer-events: none;
+    z-index: 3;
+    mix-blend-mode: overlay;
+    opacity: 0.5;
+  }
+  
+  /* ========== HYPERSPACE STREAKS (only on submit) ========== */
+  .hyperspace {
+    position: fixed;
+    inset: 0;
+    z-index: 4;
+    overflow: hidden;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  
+  body.submitting .hyperspace { opacity: 1; }
   
   .h-star {
     position: absolute;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 220, 170, 0.95), transparent);
     transform-origin: center;
-    animation: hyperdrift var(--dur, 8s) linear infinite;
+    animation: hyperdrift 1.4s linear infinite;
     animation-delay: var(--delay, 0s);
   }
   
   @keyframes hyperdrift {
-    0% { transform: translateX(-100px) translateY(0); opacity: 0; width: 40px; }
-    10% { opacity: 0.6; }
-    50% { opacity: 1; width: 80px; }
-    90% { opacity: 0.6; }
-    100% { transform: translateX(100vw) translateY(0); opacity: 0; width: 40px; }
+    0% { transform: translateX(-200px); width: 80px; opacity: 0; }
+    15% { opacity: 1; }
+    80% { opacity: 1; width: 250px; }
+    100% { transform: translateX(110vw); width: 80px; opacity: 0; }
   }
   
-  /* On submit: stars accelerate */
-  body.submitting .h-star {
-    animation-duration: 1.5s !important;
-  }
-  
-  /* === DOOR SCENE (right side) === */
-  .door-scene {
-    position: fixed;
-    top: 0;
-    right: 0;
-    width: 55%;
-    height: 100vh;
-    z-index: 2;
-    pointer-events: none;
-  }
-  
-  .door-svg {
-    width: 100%;
-    height: 100%;
-    display: block;
-  }
-  
-  /* Door states */
-  .door-light {
-    transition: all 1.5s cubic-bezier(0.4, 0, 0.2, 1);
-    fill: url(#doorGlowDim);
-  }
-  
-  .door-frame-glow {
-    transition: all 1.5s cubic-bezier(0.4, 0, 0.2, 1);
-    opacity: 0.4;
-  }
-  
-  .ambient-glow {
-    transition: all 1.5s cubic-bezier(0.4, 0, 0.2, 1);
-    opacity: 0.3;
-  }
-  
-  .ground-light {
-    transition: all 1.5s cubic-bezier(0.4, 0, 0.2, 1);
-    opacity: 0.4;
-  }
-  
-  /* Submit state: door floods bright cream */
-  body.submit-active .door-light {
-    fill: url(#doorGlowBright);
-    transform: scale(1.05);
-    transform-origin: center;
-  }
-  
-  body.submit-active .door-frame-glow {
-    opacity: 1;
-  }
-  
-  body.submit-active .ambient-glow {
-    opacity: 0.85;
-  }
-  
-  body.submit-active .ground-light {
-    opacity: 0.9;
-  }
-  
-  /* Subtle breathing on initial state */
-  .door-light, .ambient-glow {
-    animation: breathe 5s ease-in-out infinite;
-  }
-  
-  @keyframes breathe {
-    0%, 100% { filter: brightness(1); }
-    50% { filter: brightness(1.15); }
-  }
-  
-  /* === Top bar === */
+  /* ========== TOP BAR ========== */
   .topbar {
     position: fixed;
     top: 0;
@@ -178,7 +202,7 @@
     font-weight: 800;
     letter-spacing: 1.5px;
     color: var(--text);
-    text-shadow: 0 2px 12px rgba(0,0,0,0.8);
+    text-shadow: 0 2px 12px rgba(0,0,0,0.9);
   }
   .brand sup {
     font-size: 10px;
@@ -193,10 +217,10 @@
     color: var(--text);
     font-weight: 500;
     letter-spacing: 0.3px;
-    text-shadow: 0 2px 12px rgba(0,0,0,0.85);
+    text-shadow: 0 2px 12px rgba(0,0,0,0.95);
   }
   
-  /* === Stage === */
+  /* ========== STAGE ========== */
   .stage {
     position: relative;
     min-height: 100vh;
@@ -213,9 +237,9 @@
     padding: 120px 48px 80px;
   }
   
-  .content { max-width: 640px; position: relative; z-index: 11; }
+  .content { max-width: 600px; position: relative; z-index: 11; }
   
-  /* === Hero === */
+  /* ========== HERO ========== */
   .hero-title {
     font-size: clamp(56px, 9vw, 130px);
     font-weight: 900;
@@ -223,7 +247,7 @@
     letter-spacing: -0.045em;
     margin-bottom: 40px;
     color: var(--text);
-    text-shadow: 0 4px 30px rgba(0,0,0,0.8);
+    text-shadow: 0 4px 30px rgba(0,0,0,0.9);
   }
   .hero-title .red { color: var(--red); }
   
@@ -234,14 +258,14 @@
     color: var(--text);
     margin-bottom: 48px;
     max-width: 480px;
-    text-shadow: 0 2px 16px rgba(0,0,0,0.9);
+    text-shadow: 0 2px 16px rgba(0,0,0,0.95);
   }
   
-  /* === Form === */
+  /* ========== FORM ========== */
   .form-row {
     display: flex;
     gap: 10px;
-    max-width: 640px;
+    max-width: 600px;
     margin-bottom: 48px;
     flex-wrap: wrap;
   }
@@ -249,7 +273,7 @@
   .input-field {
     flex: 1;
     min-width: 200px;
-    background: rgba(0,0,0,0.55);
+    background: rgba(0,0,0,0.65);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border: 1px solid var(--line-2);
@@ -264,7 +288,7 @@
   .input-field::placeholder { color: rgba(255,255,255,0.55); }
   .input-field:focus {
     border-color: var(--cream);
-    background: rgba(0,0,0,0.7);
+    background: rgba(0,0,0,0.78);
   }
   
   .submit-btn {
@@ -280,15 +304,16 @@
     transition: all 0.25s;
     white-space: nowrap;
     border-radius: 0;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5);
   }
   .submit-btn:hover:not(:disabled) {
     background: #fff;
     transform: translateY(-1px);
+    box-shadow: 0 6px 32px rgba(241,234,216,0.3);
   }
   .submit-btn:disabled { opacity: 0.7; cursor: not-allowed; }
   
-  /* === Countdown === */
+  /* ========== COUNTDOWN ========== */
   .countdown {
     display: flex;
     align-items: flex-start;
@@ -304,7 +329,7 @@
     color: var(--text);
     letter-spacing: -0.02em;
     margin-bottom: 8px;
-    text-shadow: 0 2px 20px rgba(0,0,0,0.85);
+    text-shadow: 0 2px 20px rgba(0,0,0,0.9);
   }
   .cd-unit {
     font-size: 11px;
@@ -312,7 +337,7 @@
     letter-spacing: 2.5px;
     color: var(--muted-2);
     text-transform: uppercase;
-    text-shadow: 0 1px 10px rgba(0,0,0,0.9);
+    text-shadow: 0 1px 10px rgba(0,0,0,0.95);
   }
   .cd-divider {
     width: 1px;
@@ -320,7 +345,7 @@
     background: var(--line-2);
   }
   
-  /* === Joined === */
+  /* ========== JOINED ========== */
   .joined-row { display: flex; align-items: center; gap: 16px; }
   .avatar-stack { display: flex; align-items: center; }
   
@@ -332,7 +357,7 @@
     margin-left: -10px;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.6);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.7);
   }
   .avatar:first-child { margin-left: 0; }
   
@@ -366,11 +391,11 @@
     font-size: 14px;
     color: var(--muted-2);
     font-weight: 400;
-    text-shadow: 0 1px 10px rgba(0,0,0,0.9);
+    text-shadow: 0 1px 10px rgba(0,0,0,0.95);
   }
   .joined-text strong { color: var(--text); font-weight: 700; }
   
-  /* === Error === */
+  /* ========== ERROR ========== */
   .error {
     display: none;
     color: var(--red);
@@ -379,11 +404,11 @@
     letter-spacing: 0.5px;
     margin-top: -36px;
     margin-bottom: 24px;
-    text-shadow: 0 1px 10px rgba(0,0,0,0.9);
+    text-shadow: 0 1px 10px rgba(0,0,0,0.95);
   }
   .error.show { display: block; }
   
-  /* === Success state === */
+  /* ========== SUCCESS STATE ========== */
   .success-state {
     display: none;
     opacity: 0;
@@ -391,9 +416,7 @@
   }
   .success-state.show { display: block; opacity: 1; }
   
-  .form-state {
-    transition: opacity 0.6s ease, transform 0.6s ease;
-  }
+  .form-state { transition: opacity 0.6s ease, transform 0.6s ease; }
   .form-state.hide {
     opacity: 0;
     transform: translateY(-12px);
@@ -418,7 +441,7 @@
     background: var(--cream);
     border-radius: 50%;
     animation: pulse 1.5s ease-in-out infinite;
-    box-shadow: 0 0 12px var(--warm-bright);
+    box-shadow: 0 0 14px rgba(241,234,216,0.8);
   }
   @keyframes pulse {
     0%, 100% { opacity: 1; transform: scale(1); }
@@ -430,7 +453,7 @@
     padding: 32px 36px;
     margin-top: 32px;
     max-width: 460px;
-    background: rgba(0,0,0,0.65);
+    background: rgba(0,0,0,0.7);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
   }
@@ -456,18 +479,28 @@
     line-height: 1.6;
     color: var(--muted-2);
     max-width: 460px;
-    text-shadow: 0 1px 10px rgba(0,0,0,0.9);
+    text-shadow: 0 1px 10px rgba(0,0,0,0.95);
   }
   
-  /* === Mobile === */
+  /* ========== MOBILE ========== */
   @media (max-width: 900px) {
     .topbar { padding: 20px 24px; }
     .tagline { font-size: 12px; }
-    .door-scene {
-      width: 100%;
-      opacity: 0.5;
-      filter: blur(0.5px);
+    
+    .bg-overlay {
+      background: linear-gradient(180deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.2) 25%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.4) 100%);
     }
+    
+    .door-glow {
+      width: 60px;
+      height: 200px;
+    }
+    
+    body.submit-active .door-glow {
+      width: 160px;
+      height: 380px;
+    }
+    
     .container { padding: 100px 24px 60px; }
     .content { max-width: 100%; }
     .hero-title { font-size: clamp(48px, 14vw, 80px); margin-bottom: 32px; }
@@ -488,90 +521,16 @@
 </head>
 <body>
 
-<!-- STARFIELD -->
-<div class="starfield" id="starfield"></div>
+<!-- BACKGROUND DOOR IMAGE -->
+<div class="bg-image"></div>
+<div class="bg-overlay"></div>
 
-<!-- HYPERSPACE STREAKS -->
+<!-- DOOR GLOW OVERLAY (positioned over the door in the image) -->
+<div class="door-halo"></div>
+<div class="door-glow"></div>
+
+<!-- HYPERSPACE STREAKS (only on submit) -->
 <div class="hyperspace" id="hyperspace"></div>
-
-<!-- DOOR SCENE -->
-<div class="door-scene">
-  <svg class="door-svg" viewBox="0 0 800 1000" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <!-- Dim warm glow (initial) -->
-      <radialGradient id="doorGlowDim" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stop-color="#ff8533" stop-opacity="0.95"/>
-        <stop offset="40%" stop-color="#cc5511" stop-opacity="0.7"/>
-        <stop offset="80%" stop-color="#3a1a08" stop-opacity="0.3"/>
-        <stop offset="100%" stop-color="#000" stop-opacity="0"/>
-      </radialGradient>
-      
-      <!-- Bright cream burst (submit) -->
-      <radialGradient id="doorGlowBright" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stop-color="#fffaef" stop-opacity="1"/>
-        <stop offset="30%" stop-color="#ffe5b8" stop-opacity="0.95"/>
-        <stop offset="70%" stop-color="#ffaa55" stop-opacity="0.5"/>
-        <stop offset="100%" stop-color="#000" stop-opacity="0"/>
-      </radialGradient>
-      
-      <!-- Ambient outer glow -->
-      <radialGradient id="ambientDim" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stop-color="#ff7733" stop-opacity="0.4"/>
-        <stop offset="50%" stop-color="#3a1a08" stop-opacity="0.15"/>
-        <stop offset="100%" stop-color="#000" stop-opacity="0"/>
-      </radialGradient>
-      
-      <!-- Door frame material -->
-      <linearGradient id="doorFrame" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" stop-color="#0a0a0a"/>
-        <stop offset="50%" stop-color="#1a1410"/>
-        <stop offset="100%" stop-color="#0a0a0a"/>
-      </linearGradient>
-      
-      <!-- Door frame glow halo -->
-      <radialGradient id="frameGlowGrad" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stop-color="#ffd9a8" stop-opacity="0.6"/>
-        <stop offset="100%" stop-color="#000" stop-opacity="0"/>
-      </radialGradient>
-      
-      <!-- Ground light spill -->
-      <radialGradient id="groundSpill" cx="50%" cy="0%" r="60%">
-        <stop offset="0%" stop-color="#ffaa55" stop-opacity="0.5"/>
-        <stop offset="100%" stop-color="#000" stop-opacity="0"/>
-      </radialGradient>
-      
-      <filter id="softBlur"><feGaussianBlur stdDeviation="6"/></filter>
-      <filter id="heavyBlur"><feGaussianBlur stdDeviation="20"/></filter>
-    </defs>
-    
-    <!-- Outer ambient glow (huge soft halo around door) -->
-    <ellipse class="ambient-glow" cx="400" cy="500" rx="500" ry="500" fill="url(#ambientDim)" filter="url(#heavyBlur)"/>
-    
-    <!-- Ground light spill -->
-    <ellipse class="ground-light" cx="400" cy="800" rx="350" ry="80" fill="url(#groundSpill)" filter="url(#softBlur)"/>
-    
-    <!-- Door frame outer halo -->
-    <ellipse class="door-frame-glow" cx="400" cy="540" rx="180" ry="280" fill="url(#frameGlowGrad)" filter="url(#softBlur)"/>
-    
-    <!-- Door frame (dark silhouette) -->
-    <path d="M 300 280 L 300 760 L 500 760 L 500 280 Q 500 270 490 270 L 310 270 Q 300 270 300 280 Z" 
-          fill="url(#doorFrame)" stroke="#1a1410" stroke-width="2"/>
-    
-    <!-- Door light (the glowing inside) -->
-    <path class="door-light" d="M 320 290 L 320 760 L 480 760 L 480 290 Z"/>
-    
-    <!-- Inner brightest core -->
-    <path class="door-light" d="M 350 320 L 350 740 L 450 740 L 450 320 Z" opacity="0.6"/>
-    
-    <!-- Door edge highlights -->
-    <line x1="320" y1="290" x2="320" y2="760" stroke="#ffd9a8" stroke-width="1" opacity="0.5"/>
-    <line x1="480" y1="290" x2="480" y2="760" stroke="#ffd9a8" stroke-width="1" opacity="0.5"/>
-    <line x1="320" y1="290" x2="480" y2="290" stroke="#ffd9a8" stroke-width="1" opacity="0.4"/>
-    
-    <!-- Light beam coming out -->
-    <path class="ground-light" d="M 320 760 L 480 760 L 600 850 L 200 850 Z" fill="url(#groundSpill)" opacity="0.4" filter="url(#softBlur)"/>
-  </svg>
-</div>
 
 <!-- TOP BAR -->
 <div class="topbar">
@@ -648,48 +607,26 @@
 </div>
 
 <script>
-  // ============ CONFIG ============
   const N8N_WEBHOOK = 'https://daark-live.app.n8n.cloud/webhook/0ebd60fd-3fc0-4d30-a4a6-dc76d7cee866';
   const SUPABASE_URL = 'https://imuoxelvoaypwzoytaol.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImltdW94ZWx2b2F5cHd6b3l0YW9sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MjE1NTYsImV4cCI6MjA5MTk5NzU1Nn0.8wAMkQggrYUTwwdHariVKbX_Q-V2ov9C7_y0j5TesUg';
   const COUNTDOWN_TARGET = new Date(Date.now() + 21 * 24 * 60 * 60 * 1000);
   
-  // ============ STARFIELD GENERATION ============
-  function generateStars() {
-    const sf = document.getElementById('starfield');
-    for (let i = 0; i < 150; i++) {
-      const s = document.createElement('div');
-      s.className = 'star';
-      const size = Math.random() * 2 + 0.5;
-      s.style.width = size + 'px';
-      s.style.height = size + 'px';
-      s.style.left = Math.random() * 100 + '%';
-      s.style.top = Math.random() * 100 + '%';
-      s.style.setProperty('--dur', (Math.random() * 4 + 2) + 's');
-      s.style.setProperty('--delay', Math.random() * 5 + 's');
-      s.style.setProperty('--max-op', (Math.random() * 0.6 + 0.4));
-      sf.appendChild(s);
-    }
-  }
-  generateStars();
-  
-  // ============ HYPERSPACE STREAKS ============
+  // HYPERSPACE STREAKS
   function generateHyperspace() {
     const h = document.getElementById('hyperspace');
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < 18; i++) {
       const s = document.createElement('div');
       s.className = 'h-star';
       s.style.top = Math.random() * 100 + '%';
-      s.style.setProperty('--dur', (Math.random() * 6 + 6) + 's');
-      s.style.setProperty('--delay', (-Math.random() * 8) + 's');
+      s.style.setProperty('--delay', (-Math.random() * 1.8) + 's');
       h.appendChild(s);
     }
   }
   generateHyperspace();
   
-  // ============ COUNTRY DETECTION ============
+  // COUNTRY DETECTION
   let detectedPrefix = '+91';
-  
   async function detectCountry() {
     try {
       const res = await fetch('https://ipapi.co/json/');
@@ -703,7 +640,7 @@
   }
   detectCountry();
   
-  // ============ COUNTDOWN ============
+  // COUNTDOWN
   function updateCountdown() {
     const diff = COUNTDOWN_TARGET - new Date();
     if (diff <= 0) {
@@ -722,7 +659,7 @@
   updateCountdown();
   setInterval(updateCountdown, 1000);
   
-  // ============ LIVE COUNT ============
+  // LIVE COUNT
   async function loadJoinedCount() {
     try {
       const res = await fetch(SUPABASE_URL + '/rest/v1/registration?select=id', {
@@ -757,7 +694,7 @@
   }
   loadJoinedCount();
   
-  // ============ FORM SUBMIT ============
+  // FORM SUBMIT
   document.getElementById('waitlistForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     const email = document.getElementById('email').value.trim();
@@ -794,7 +731,7 @@
     btn.disabled = true;
     btn.textContent = 'Opening...';
     
-    // Stage 1: stars accelerate
+    // Stage 1: hyperspace streaks fire up
     document.body.classList.add('submitting');
     
     try {
@@ -806,9 +743,12 @@
       const data = await res.json();
       
       if (data.status === 'success' && data.unique_id) {
-        // Stage 2: door floods bright cream
-        document.body.classList.add('submit-active');
         document.getElementById('successId').textContent = data.unique_id;
+        
+        // Stage 2: door floods bright
+        setTimeout(() => {
+          document.body.classList.add('submit-active');
+        }, 300);
         
         // Stage 3: form fades, success appears
         setTimeout(() => {
@@ -817,7 +757,7 @@
             document.getElementById('formState').style.display = 'none';
             document.getElementById('successState').classList.add('show');
           }, 600);
-        }, 800);
+        }, 1200);
       } else {
         throw new Error('fail');
       }
