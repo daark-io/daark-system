@@ -6,15 +6,16 @@
 <title>DAARK</title>
 
 <style>
+{margin:0;padding:0;box-sizing:border-box;}
+
 body{
-margin:0;
-background:black;
-color:white;
+background:#000;
+color:#fff;
 font-family:Inter, sans-serif;
 overflow:hidden;
 }
 
-/* STARFIELD /
+/ STAR BACKGROUND /
 canvas{
 position:fixed;
 top:0;
@@ -22,7 +23,7 @@ left:0;
 z-index:0;
 }
 
-/ PAGE /
+/ SCREEN /
 .screen{
 position:fixed;
 width:100%;
@@ -41,20 +42,22 @@ opacity:1;
 pointer-events:auto;
 }
 
+/ CONTAINER /
 .container{
-max-width:500px;
 width:100%;
-text-align:center;
+max-width:520px;
+height:100%;
 display:flex;
 flex-direction:column;
 justify-content:space-between;
-height:100%;
-padding:40px 20px;
+align-items:center;
+padding:60px 20px 40px;
+text-align:center;
 }
 
-/ TYPOGRAPHY /
+/ LOGO /
 .logo{
-font-size:64px;
+font-size:72px;
 letter-spacing:-2px;
 }
 
@@ -62,92 +65,107 @@ letter-spacing:-2px;
 .white{color:#fff;}
 
 .subtitle{
-letter-spacing:6px;
+letter-spacing:8px;
 margin-top:10px;
 }
 
+/ TEXT /
 .coming{
 color:#ff0000;
+letter-spacing:4px;
 font-size:12px;
-letter-spacing:3px;
 margin-top:20px;
 }
 
 .journey{
-font-size:20px;
-margin:20px 0;
+font-size:22px;
+margin:25px 0;
 }
 
 .small{
 color:#aaa;
-font-size:14px;
 line-height:1.6;
+font-size:14px;
 }
 
 / FORM /
+.form{
+width:100%;
+margin-top:20px;
+}
+
 input{
 width:100%;
 padding:14px;
-margin-top:10px;
-background:#111;
-border:1px solid #333;
-color:white;
+margin-top:12px;
+background:#0a0a0a;
+border:1px solid #222;
+color:#fff;
 border-radius:6px;
 }
 
 button{
-margin-top:15px;
+width:100%;
 padding:14px;
+margin-top:14px;
 background:#ff0000;
 border:none;
-color:white;
+color:#fff;
 font-weight:bold;
 border-radius:6px;
 cursor:pointer;
+box-shadow:0 0 25px rgba(255,0,0,0.4);
+transition:0.3s;
+}
+
+button:hover{
+transform:translateY(-3px);
+box-shadow:0 0 40px rgba(255,0,0,0.8);
 }
 
 / DOOR /
 .door{
-width:180px;
+width:170px;
 height:300px;
-margin:30px auto;
 border:10px solid #111;
+margin-top:30px;
 position:relative;
-transition:1.2s;
 }
 
 .door-light{
 position:absolute;
 inset:10%;
-background:radial-gradient(circle,#ff0000,transparent);
-box-shadow:0 0 120px red;
-transition:1.2s;
+background:radial-gradient(circle,#ff0000 0%,rgba(255,0,0,0.7) 50%,transparent 100%);
+box-shadow:
+0 0 120px red,
+0 0 220px rgba(255,0,0,0.6);
 }
 
 / SUCCESS DOOR /
 .success .door-light{
-background:radial-gradient(circle,#fff4cc,transparent);
-box-shadow:0 0 150px #fff4cc;
-}
-
-/ FOOTER /
-.footer{
-font-size:12px;
-color:#888;
-margin-top:20px;
+background:radial-gradient(circle,#fff2cc 0%,#ffe4a0 60%,transparent 100%);
+box-shadow:
+0 0 150px #ffe4a0,
+0 0 300px rgba(255,230,160,0.6);
 }
 
 / SUCCESS TITLE /
 .success-title{
-font-size:48px;
-margin-bottom:10px;
+font-size:56px;
+}
+
+/ FOOTER */
+.footer{
+font-size:12px;
+color:#888;
+margin-top:15px;
 }
 </style>
 </head>
 
 <body>
 
-<canvas id="star"></canvas>
+<canvas id="stars"></canvas>
 
 <!-- LANDING -->
 <div id="landing" class="screen active">
@@ -163,13 +181,14 @@ D<span class="white">A</span><span class="red">A</span>RK
 
 <div>
 <p class="journey">The journey begins within.</p>
+
 <p class="small">
 Most people fail.<br>
 Not because they lack effort.<br>
 Because they lack structure.
 </p>
 
-<form id="form">
+<form id="form" class="form">
 <input type="email" placeholder="Enter your email" required>
 <input type="text" placeholder="Enter your phone number">
 <button>JOIN WAITLIST</button>
@@ -177,7 +196,7 @@ Because they lack structure.
 </div>
 
 <div>
-<div class="door" id="door">
+<div class="door">
 <div class="door-light"></div>
 </div>
 
@@ -217,8 +236,7 @@ Now it's time to become undeniable.
 </div>
 
 <script>
-/ STARFIELD */
-const canvas=document.getElementById("star");
+const canvas=document.getElementById("stars");
 const ctx=canvas.getContext("2d");
 let stars=[];
 
@@ -235,7 +253,7 @@ this.y=Math.random()*canvas.height;
 this.z=Math.random()*1000;
 }
 update(){
-this.z-=4;
+this.z-=3;
 if(this.z<=0)this.reset();
 }
 draw(){
@@ -249,7 +267,7 @@ ctx.fillRect(x,y,2,2);
 
 function init(){
 resize();
-for(let i=0;i<500;i++)stars.push(new Star());
+for(let i=0;i<600;i++)stars.push(new Star());
 animate();
 }
 
@@ -263,7 +281,6 @@ requestAnimationFrame(animate);
 / FLOW */
 document.getElementById("form").onsubmit=e=>{
 e.preventDefault();
-
 document.getElementById("landing").classList.remove("active");
 document.getElementById("success").classList.add("active");
 };
