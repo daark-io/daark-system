@@ -1,69 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>DAARK</title>
-
-  <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-      background: black;
-    }
-
-    #canvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-    }
-
-    .center-ui {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      color: white;
-      text-align: center;
-      font-family: sans-serif;
-    }
-
-    .door {
-      width: 80px;
-      height: 160px;
-      margin: 20px auto;
-      background: #FF3B1F;
-      box-shadow: 0 0 40px rgba(255, 59, 31, 0.6);
-      transition: all 1.2s ease;
-    }
-
-    .door.success {
-      background: #FFF3D6;
-      box-shadow: 0 0 80px rgba(255, 243, 214, 0.8);
-    }
-
-    button {
-      padding: 10px 20px;
-      background: #FF3B1F;
-      border: none;
-      color: white;
-      cursor: pointer;
-    }
-  </style>
-</head>
-<body>
-
-<canvas id="canvas"></canvas>
-
-<div class="center-ui">
-  <h1>DAARK</h1>
-  <div class="door" id="door"></div>
-  <button id="btn">ENTER</button>
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-
 <script>
 const canvas = document.getElementById('canvas')
 
@@ -72,36 +6,38 @@ const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHei
 const renderer = new THREE.WebGLRenderer({ canvas, alpha: true })
 
 renderer.setSize(window.innerWidth, window.innerHeight)
-
 camera.position.z = 5
 
-// STARFIELD
-const count = 900
+// ===== DEPTH FOG (adds realism) =====
+scene.fog = new THREE.FogExp2(0x000000, 0.04)
+
+// ===== STARFIELD =====
+const count = 1000
 const positions = new Float32Array(count * 3)
 
 for (let i = 0; i < count; i++) {
-  let x = (Math.random() - 0.5) * 50
-  let y = (Math.random() - 0.5) * 50
+  let x = (Math.random() - 0.5) * 100
+  let y = (Math.random() - 0.5) * 100
 
-  // center clean
-  if (Math.sqrt(x*x + y*y) < 5) {
-    x += 10
-    y += 10
-  }
+  // clean center (focus on door)
+  if (Math.sqrt(x*x + y*y) < 8) continue
 
   positions[i * 3] = x
   positions[i * 3 + 1] = y
-  positions[i * 3 + 2] = -Math.random() * 50
+  positions[i * 3 + 2] = -Math.random() * 100
 }
 
 const geometry = new THREE.BufferGeometry()
 geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
 
+// softer cinematic stars
 const material = new THREE.PointsMaterial({
-  color: 0xffffff,
-  size: 0.05,
+  color: 0x9fb3ff,
+  size: 0.06,
+  transparent: true,
   opacity: 0.7,
-  transparent: true
+  blending: THREE.AdditiveBlending,
+  depthWrite: false
 })
 
 const stars = new THREE.Points(geometry, material)
@@ -115,10 +51,19 @@ function animate() {
   const pos = geometry.attributes.position.array
 
   for (let i = 0; i < pos.length; i += 3) {
+
+    // ===== RADIAL MOTION (THIS IS KEY) =====
+    const dx = -pos[i]
+    const dy = -pos[i + 1]
+
+    pos[i] += dx * speed * 0.02
+    pos[i + 1] += dy * speed * 0.02
     pos[i + 2] += speed
 
-    if (pos[i + 2] > 1) {
-      pos[i + 2] = -50
+    if (pos[i + 2] > 2) {
+      pos[i] = (Math.random() - 0.5) * 100
+      pos[i + 1] = (Math.random() - 0.5) * 100
+      pos[i + 2] = -100
     }
   }
 
@@ -128,7 +73,7 @@ function animate() {
 
 animate()
 
-// INTERACTION
+// ===== INTERACTION =====
 const btn = document.getElementById("btn")
 const door = document.getElementById("door")
 
@@ -136,15 +81,15 @@ btn.addEventListener("click", () => {
 
   gsap.to({ val: speed }, {
     val: 0.6,
-    duration: 1,
+    duration: 1.2,
+    ease: "power3.out",
     onUpdate: function() {
       speed = this.targets()[0].val
     }
   })
 
-  door.classList.add("success")
+  setTimeout(() => {
+    door.classList.add("success")
+  }, 500)
 })
 </script>
-
-</body>
-</html>
