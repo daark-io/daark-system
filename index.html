@@ -83,13 +83,13 @@
 
   /* ===== LANDING ===== */
   #landing {
-    transition: opacity 0.9s cubic-bezier(0.4, 0, 0.2, 1), transform 1.2s cubic-bezier(0.4, 0, 0.2, 1), filter 0.9s ease;
+    transition: opacity 1.1s cubic-bezier(0.4, 0, 0.2, 1), transform 1.4s cubic-bezier(0.4, 0, 0.2, 1), filter 1.1s ease;
   }
 
   #landing.gone {
     opacity: 0;
-    transform: scale(1.08);
-    filter: blur(6px);
+    transform: scale(1.05);
+    filter: blur(8px);
     pointer-events: none;
     position: absolute;
     inset: 0;
@@ -369,9 +369,9 @@
   /* ===== SUCCESS ===== */
   #success {
     opacity: 0;
-    transform: scale(0.94);
+    transform: scale(0.96);
     pointer-events: none;
-    transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1) 0.4s, transform 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.4s;
+    transition: opacity 1.4s cubic-bezier(0.16, 1, 0.3, 1), transform 1.6s cubic-bezier(0.16, 1, 0.3, 1);
     position: absolute;
     inset: 0;
   }
@@ -617,87 +617,42 @@
 const canvas = document.getElementById('canvas');
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 camera.position.z = 5;
 
-scene.fog = new THREE.FogExp2(0x000000, 0.04);
-
-const count = 1400;
+const count = 900;
 const positions = new Float32Array(count * 3);
 for (let i = 0; i < count; i++) {
-  let x = (Math.random() - 0.5) * 100;
-  let y = (Math.random() - 0.5) * 100;
-  if (Math.sqrt(x * x + y * y) < 6) { x += 8; y += 8; }
-  positions[i * 3] = x;
+  let x = (Math.random() - 0.5) * 50;
+  let y = (Math.random() - 0.5) * 50;
+  if (Math.sqrt(x * x + y * y) < 5) { x += 10; y += 10; }
+  positions[i * 3]     = x;
   positions[i * 3 + 1] = y;
-  positions[i * 3 + 2] = -Math.random() * 100;
+  positions[i * 3 + 2] = -Math.random() * 50;
 }
 const geometry = new THREE.BufferGeometry();
 geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-
 const material = new THREE.PointsMaterial({
-  color: 0xb5c5ff,
-  size: 0.06,
-  transparent: true,
-  opacity: 0.75,
-  blending: THREE.AdditiveBlending,
-  depthWrite: false
+  color: 0xffffff,
+  size: 0.05,
+  opacity: 0.7,
+  transparent: true
 });
 const stars = new THREE.Points(geometry, material);
 scene.add(stars);
 
-const redCount = 100;
-const redPositions = new Float32Array(redCount * 3);
-for (let i = 0; i < redCount; i++) {
-  redPositions[i * 3] = (Math.random() - 0.5) * 80;
-  redPositions[i * 3 + 1] = (Math.random() - 0.5) * 80;
-  redPositions[i * 3 + 2] = -Math.random() * 100;
-}
-const redGeometry = new THREE.BufferGeometry();
-redGeometry.setAttribute('position', new THREE.BufferAttribute(redPositions, 3));
-const redMaterial = new THREE.PointsMaterial({
-  color: 0xd91818,
-  size: 0.09,
-  transparent: true,
-  opacity: 0.55,
-  blending: THREE.AdditiveBlending,
-  depthWrite: false
-});
-const redStars = new THREE.Points(redGeometry, redMaterial);
-scene.add(redStars);
-
-let speed = 0.018;
+let speed = 0.02;
 
 function animate() {
   requestAnimationFrame(animate);
   const pos = geometry.attributes.position.array;
   for (let i = 0; i < pos.length; i += 3) {
-    const dx = -pos[i];
-    const dy = -pos[i + 1];
-    pos[i] += dx * speed * 0.018;
-    pos[i + 1] += dy * speed * 0.018;
     pos[i + 2] += speed;
-    if (pos[i + 2] > 2) {
-      pos[i] = (Math.random() - 0.5) * 100;
-      pos[i + 1] = (Math.random() - 0.5) * 100;
-      pos[i + 2] = -100;
-    }
+    if (pos[i + 2] > 1) { pos[i + 2] = -50; }
   }
   geometry.attributes.position.needsUpdate = true;
-
-  const rpos = redGeometry.attributes.position.array;
-  for (let i = 0; i < rpos.length; i += 3) {
-    rpos[i + 2] += speed * 0.7;
-    if (rpos[i + 2] > 2) {
-      rpos[i] = (Math.random() - 0.5) * 80;
-      rpos[i + 1] = (Math.random() - 0.5) * 80;
-      rpos[i + 2] = -100;
-    }
-  }
-  redGeometry.attributes.position.needsUpdate = true;
-
   renderer.render(scene, camera);
 }
 animate();
@@ -737,11 +692,11 @@ function submitWaitlist() {
     body: JSON.stringify({ email, phone })
   })
   .then(res => {
-    if (!res.ok) throw new Error('Server error');
+    if (!res.ok) throw new Error('Server error: ' + res.status);
     return res.json();
   })
   .then(data => {
-    if (data.status === 'success') {
+    if (data && data.status === 'success') {
       document.getElementById('uniqueId').textContent = data.unique_id || '—';
       triggerTransition();
     } else {
@@ -752,42 +707,74 @@ function submitWaitlist() {
     btn.classList.remove('loading');
     btn.textContent = 'JOIN WAITLIST';
     err.textContent = 'SOMETHING WENT WRONG. TRY AGAIN.';
-    console.error(error);
+    console.error('Submit error:', error);
   });
 }
 
 function triggerTransition() {
-  gsap.to({ val: speed }, {
-    val: 0.5,
-    duration: 1.4,
+  const tl = gsap.timeline();
+
+  // 1. Ramp speed up smoothly
+  tl.to({ val: speed }, {
+    val: 0.55,
+    duration: 1.6,
     ease: 'power2.in',
     onUpdate: function () { speed = this.targets()[0].val; }
   });
 
-  setTimeout(() => {
+  // 2. At peak speed — fade landing out (CSS transition handles blur+scale)
+  tl.call(() => {
     document.getElementById('landing').classList.add('gone');
-    setTimeout(() => {
-      document.getElementById('success').classList.add('visible');
-      gsap.to({ val: speed }, {
-        val: 0.018,
-        duration: 2.5,
-        ease: 'power3.out',
-        onUpdate: function () { speed = this.targets()[0].val; }
-      });
-    }, 400);
-  }, 1300);
+  }, null, '-=0.1');
+
+  // 3. Short hold at peak, then bring success in while still moving fast
+  tl.call(() => {
+    document.getElementById('success').classList.add('visible');
+  }, null, '+=0.5');
+
+  // 4. Decelerate back to cruise — success screen is now fully visible
+  tl.to({ val: speed }, {
+    val: 0.02,
+    duration: 2.8,
+    ease: 'power3.out',
+    onUpdate: function () { speed = this.targets()[0].val; }
+  }, '-=0.2');
 }
 
 function backToHome() {
-  document.getElementById('success').classList.remove('visible');
-  setTimeout(() => {
-    document.getElementById('landing').classList.remove('gone');
+  const tl = gsap.timeline();
+
+  // 1. Gentle pulse up
+  tl.to({ val: speed }, {
+    val: 0.12,
+    duration: 0.8,
+    ease: 'power1.in',
+    onUpdate: function () { speed = this.targets()[0].val; }
+  });
+
+  // 2. Fade success out
+  tl.call(() => {
+    document.getElementById('success').classList.remove('visible');
+  }, null, '-=0.1');
+
+  // 3. Bring landing back while still moving
+  tl.call(() => {
+    const landing = document.getElementById('landing');
+    landing.classList.remove('gone');
     document.getElementById('email').value = '';
     document.getElementById('phone').value = '';
     document.getElementById('submitBtn').classList.remove('loading');
     document.getElementById('submitBtn').textContent = 'JOIN WAITLIST';
     document.getElementById('errorMsg').textContent = '';
-  }, 600);
+  }, null, '+=0.4');
+
+  // 4. Settle back to base speed
+  tl.to({ val: speed }, {
+    val: 0.02,
+    duration: 1.8,
+    ease: 'power2.out',
+    onUpdate: function () { speed = this.targets()[0].val; }
+  }, '-=0.2');
 }
 
 document.addEventListener('keydown', (e) => {
